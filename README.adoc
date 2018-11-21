@@ -1,0 +1,203 @@
+= LGrep - Syslog Collector and Analyzer
+
+"ssh connection"(security, info, "", authorizer, "Connection from 10.0.2.2 port 59743 on 10.0.2.15 port 22")
+
+
+127.0.0.1:54970 @ 2018-11-19 16:29:27.627162 +0200 EET m=+10852.254960140
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3301]: Connection from 10.0.2.2 port 59743 on 10.0.2.15 port 22
+127.0.0.1:54970 @ 2018-11-19 16:29:27.649105 +0200 EET m=+10852.276903786
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3301]: Postponed publickey for mtr from 10.0.2.2 port 59743 ssh2 [preauth]
+127.0.0.1:54970 @ 2018-11-19 16:29:27.652269 +0200 EET m=+10852.280068227
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3301]: Accepted publickey for mtr from 10.0.2.2 port 59743 ssh2: RSA SHA256:R9D+G/DQmxLICfKYEoGTzKmgc48XLOa3iD6Fa4ecneY
+127.0.0.1:54970 @ 2018-11-19 16:29:27.654515 +0200 EET m=+10852.282314696
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3301]: pam_unix(sshd:session): session opened for user mtr by (uid=0)
+127.0.0.1:54970 @ 2018-11-19 16:29:27.661305 +0200 EET m=+10852.289104699
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[1]: Created slice User Slice of mtr.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.674265 +0200 EET m=+10852.302064749
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[1]: Starting User Manager for UID 1000...
+127.0.0.1:54970 @ 2018-11-19 16:29:27.678219 +0200 EET m=+10852.306018785
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd: pam_unix(systemd-user:session): session opened for user mtr by (uid=0)
+127.0.0.1:54970 @ 2018-11-19 16:29:27.68746 +0200 EET m=+10852.315259764
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[1]: Started Session 17 of user mtr.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.688885 +0200 EET m=+10852.316685721
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd-logind[641]: New session 17 of user mtr.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.721497 +0200 EET m=+10852.349298080
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Reached target Paths.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.733126 +0200 EET m=+10852.360927712
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Reached target Sockets.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.734672 +0200 EET m=+10852.362474011
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Reached target Timers.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.735037 +0200 EET m=+10852.362838849
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Reached target Basic System.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.735392 +0200 EET m=+10852.363193359
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Reached target Default.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.735761 +0200 EET m=+10852.363562055
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Startup finished in 43ms.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.736212 +0200 EET m=+10852.364013509
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:27 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[1]: Started User Manager for UID 1000.
+127.0.0.1:54970 @ 2018-11-19 16:29:27.906534 +0200 EET m=+10852.534340055
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:28 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3301]: User child is on pid 3353
+127.0.0.1:54970 @ 2018-11-19 16:29:27.909628 +0200 EET m=+10852.537433996
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:28 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3353]: Starting session: shell on pts/8 for mtr from 10.0.2.2 port 59743 id 0
+127.0.0.1:54970 @ 2018-11-19 16:29:32.11943 +0200 EET m=+10856.747351879
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3353]: Received disconnect from 10.0.2.2 port 59743:11: disconnected by user
+127.0.0.1:54970 @ 2018-11-19 16:29:32.119954 +0200 EET m=+10856.747875458
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3353]: Disconnected from 10.0.2.2 port 59743
+127.0.0.1:54970 @ 2018-11-19 16:29:32.120714 +0200 EET m=+10856.748635920
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : sshd[3301]: pam_unix(sshd:session): session closed for user mtr
+127.0.0.1:54970 @ 2018-11-19 16:29:32.14771 +0200 EET m=+10856.775632350
+   Facility : security
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd-logind[641]: Removed session 17.
+127.0.0.1:54970 @ 2018-11-19 16:29:32.156668 +0200 EET m=+10856.784590680
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[1]: Stopping User Manager for UID 1000...
+127.0.0.1:54970 @ 2018-11-19 16:29:32.156745 +0200 EET m=+10856.784667581
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Reached target Shutdown.
+127.0.0.1:54970 @ 2018-11-19 16:29:32.156941 +0200 EET m=+10856.784863974
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Stopped target Default.
+127.0.0.1:54970 @ 2018-11-19 16:29:32.157145 +0200 EET m=+10856.785067625
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Starting Exit the Session...
+127.0.0.1:54970 @ 2018-11-19 16:29:32.157172 +0200 EET m=+10856.785094537
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Stopped target Basic System.
+127.0.0.1:54970 @ 2018-11-19 16:29:32.157345 +0200 EET m=+10856.785268100
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Stopped target Sockets.
+127.0.0.1:54970 @ 2018-11-19 16:29:32.157407 +0200 EET m=+10856.785329225
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Stopped target Timers.
+127.0.0.1:54970 @ 2018-11-19 16:29:32.157568 +0200 EET m=+10856.785490829
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Stopped target Paths.
+127.0.0.1:54970 @ 2018-11-19 16:29:32.166536 +0200 EET m=+10856.794458468
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[3303]: Received SIGRTMIN+24 from PID 3366 (kill).
+127.0.0.1:54970 @ 2018-11-19 16:29:32.177523 +0200 EET m=+10856.805446066
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[1]: Stopped User Manager for UID 1000.
+127.0.0.1:54970 @ 2018-11-19 16:29:32.179427 +0200 EET m=+10856.807350288
+   Facility : system
+   Severity : info
+  Timestamp : 2018-11-19 16:29:32 +0000 UTC
+   Hostname : authorizer
+    Message : systemd[1]: Removed slice User Slice of mtr.
