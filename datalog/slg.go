@@ -87,8 +87,8 @@ func (t *TermVariable) Rename(env Environment) {
 }
 
 func (t *TermVariable) Substitute(env Environment) Term {
-	subst, ok := env[t.Symbol]
-	if ok {
+	subst := env[t.Symbol]
+	if subst != nil {
 		return subst
 	}
 	return t
@@ -132,7 +132,7 @@ func (t *TermConstant) Type() TermType {
 }
 
 func (t *TermConstant) Variable() Symbol {
-	panic("Variable() called for a constant term")
+	return NilSymbol
 }
 
 func (t *TermConstant) Rename(env Environment) {

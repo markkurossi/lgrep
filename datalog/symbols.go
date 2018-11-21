@@ -27,6 +27,10 @@ var (
 	symbolsByName        = make(map[string]Symbol)
 )
 
+const (
+	NilSymbol Symbol = 0
+)
+
 func (s Symbol) String() string {
 	m.Lock()
 	name, ok := symbolsByID[s]
