@@ -38,7 +38,7 @@ func (s Symbol) String() string {
 		return name.Name
 	}
 	// Unique variable.
-	return fmt.Sprintf("{%d}", s)
+	return fmt.Sprintf(":%d", s)
 }
 
 func intern(symbol string, stringlike bool) Symbol {

@@ -61,6 +61,7 @@ type Term interface {
 	Rename(env Environment)
 	Substitute(env Environment) Term
 	Unify(t Term, env Environment) Environment
+	Equals(t Term) bool
 	String() string
 }
 
@@ -97,6 +98,14 @@ func (t *TermVariable) Substitute(env Environment) Term {
 func (t *TermVariable) Unify(o Term, env Environment) Environment {
 	env[t.Symbol] = o
 	return env
+}
+
+func (t *TermVariable) Equals(other Term) bool {
+	switch o := other.(type) {
+	case *TermVariable:
+		return t.Symbol == o.Symbol
+	}
+	return false
 }
 
 func (t *TermVariable) String() string {
@@ -141,6 +150,15 @@ func (t *TermConstant) Unify(other Term, env Environment) Environment {
 	}
 
 	return nil
+}
+
+func (t *TermConstant) Equals(other Term) bool {
+	switch o := other.(type) {
+	case *TermConstant:
+		return t.Value == o.Value
+	}
+
+	return false
 }
 
 func (t *TermConstant) String() string {
@@ -192,11 +210,11 @@ func (a *Atom) Unify(o *Atom) Environment {
 	if a.Predicate != o.Predicate {
 		return nil
 	}
-	var env Environment
+	env := NewEnvironment()
 	for i, t := range a.Terms {
 		tn := t.Substitute(env)
 		on := o.Terms[i].Substitute(env)
-		if tn != on {
+		if !tn.Equals(on) {
 			env = tn.Unify(on, env)
 			if env == nil {
 				return nil
@@ -204,6 +222,21 @@ func (a *Atom) Unify(o *Atom) Environment {
 		}
 	}
 	return env
+}
+
+func (a *Atom) Equals(o *Atom) bool {
+	if a.Predicate != o.Predicate {
+		return false
+	}
+	if len(a.Terms) != len(o.Terms) {
+		return false
+	}
+	for idx, t := range a.Terms {
+		if !t.Equals(o.Terms[idx]) {
+			return false
+		}
+	}
+	return true
 }
 
 type Clause struct {
@@ -223,6 +256,41 @@ func (c *Clause) String() string {
 		}
 	}
 	return str
+}
+
+func (c *Clause) Equals(o *Clause) bool {
+	if !c.Head.Equals(o.Head) {
+		return false
+	}
+	if len(c.Body) != len(o.Body) {
+		return false
+	}
+	for idx, a := range c.Body {
+		if !a.Equals(o.Body[idx]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (c *Clause) Resolve(o *Clause) *Clause {
+	if len(c.Body) == 0 {
+		return nil
+	}
+	env := NewEnvironment()
+	o.Head.Rename(env)
+	env = c.Body[0].Unify(o.Head)
+	if len(env) == 0 {
+		return nil
+	}
+	newBody := make([]*Atom, len(c.Body)-1)
+	for idx, t := range c.Body[1:] {
+		newBody[idx] = t.Substitute(env)
+	}
+	return &Clause{
+		Head: c.Head.Substitute(env),
+		Body: newBody,
+	}
 }
 
 type ClauseType int
@@ -251,8 +319,23 @@ func (t ClauseType) String() string {
 
 type Environment map[Symbol]Term
 
+func NewEnvironment() Environment {
+	return make(map[Symbol]Term)
+}
+
+func (e Environment) String() string {
+	var str string
+	for k, v := range e {
+		if len(str) > 0 {
+			str += ","
+		}
+		str += fmt.Sprintf("%s=%s", k, v)
+	}
+	return "[" + str + "]"
+}
+
 func (c *Clause) Rename() *Clause {
-	var env Environment
+	env := NewEnvironment()
 	for _, atom := range c.Body {
 		env = atom.Rename(env)
 	}
@@ -278,7 +361,7 @@ func (c *Clause) Substitute(env Environment) *Clause {
 
 type SLG struct {
 	Count   int
-	T       []TableEntry
+	T       []*TableEntry
 	S       *Stack
 	DFN     int
 	PosLink int
@@ -294,8 +377,8 @@ type TableEntry struct {
 }
 
 type Pair struct {
-	B Clause
-	G Clause
+	B *Clause
+	H *Clause
 }
 
 type Stack struct {
@@ -320,8 +403,8 @@ type StackEntry struct {
 
 func (slg *SLG) Query(a *Atom) []*Clause {
 	slg.Count = 1
-	slg.T = []TableEntry{
-		TableEntry{
+	slg.T = []*TableEntry{
+		&TableEntry{
 			A:    a,
 			Comp: false,
 		},
@@ -366,13 +449,40 @@ func (slg *SLG) NewClause(a *Atom, g *Clause, posMin, negMin int) {
 }
 
 func (slg *SLG) Complete(a *Atom, posMin, negMin int) {
-	panic("SLG.Complete()")
+	fmt.Printf("SLG.Complete(%s,%d,%d)\n", a, posMin, negMin)
+	//panic("SLG.Complete()")
 }
 
 func (slg *SLG) Answer(a *Atom, g *Clause, posMin, negMin int) {
-	panic("SLG.Answer()")
+	fmt.Printf("SLG.Answer(%s,%s,%d,%d)\n", a, g, posMin, negMin)
+	// XXX check if answers could be stored directly to `a'.
+	var tableEntry *TableEntry
+	for _, t := range slg.T {
+		if a.Equals(t.A) {
+			tableEntry = t
+			break
+		}
+	}
+	if tableEntry != nil {
+		for _, ans := range tableEntry.Anss {
+			if g.Equals(ans) {
+				// Answer already added.
+				return
+			}
+		}
+	}
+	tableEntry.Anss = append(tableEntry.Anss, g)
+
+	// XXX if G has no delayed literals
+	for _, pair := range tableEntry.Poss {
+		resolvent := pair.H.Resolve(g)
+		if resolvent != nil {
+			slg.NewClause(pair.B.Head, resolvent, posMin, negMin)
+		}
+	}
 }
 
 func (slg *SLG) Positive(a *Atom, g *Clause, b *Atom, posMin, negMin int) {
-	panic("SLG.Positive()")
+	fmt.Printf("SLG.Positive(%s,%s,%d,%d)\n", a, g, posMin, negMin)
+	//panic("SLG.Positive()")
 }

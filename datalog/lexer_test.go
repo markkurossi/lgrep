@@ -24,12 +24,13 @@ fact.
 fact~
 
 % Queries
-parent(bill, X)?
 parent(X, Y)?
+parent(bill, X)?
 
 % rules
 ancestor(X, Y) :- parent(X, Y).
 ancestor(X, Y) :- parent(X, Z), ancestor(Z, Y).
+ancestor(X, john)?
 `
 
 func TestLexer(t *testing.T) {

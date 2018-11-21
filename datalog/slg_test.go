@@ -1,5 +1,5 @@
 //
-// parser_test.go
+// slg_test.go
 //
 // Copyright (c) 2018 Markku Rossi
 //
@@ -15,9 +15,12 @@ import (
 	"testing"
 )
 
-func TestParser(t *testing.T) {
+func TestSLG(t *testing.T) {
 	in := strings.NewReader(input)
 	parser := NewParser("data", in)
+
+	slg := &SLG{}
+
 	for {
 		clause, clauseType, err := parser.Parse()
 		if err != nil {
@@ -28,6 +31,18 @@ func TestParser(t *testing.T) {
 		}
 		if false {
 			fmt.Printf("%s%s\n", clause, clauseType)
+		}
+
+		switch clauseType {
+		case ClauseFact:
+			DBAdd(clause)
+
+		case ClauseQuery:
+			fmt.Printf("%s%s\n", clause, clauseType)
+			result := slg.Query(clause.Head)
+			for _, r := range result {
+				fmt.Printf("=> %s\n", r)
+			}
 		}
 	}
 }
