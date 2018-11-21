@@ -15,11 +15,37 @@ import (
 	"testing"
 )
 
+var clauseData = []string{
+	"data(a,X). data(a,Y).",
+	"data(a,X). data(a,X).",
+	"data(a,b). data(a,b).",
+	"data(X,Y):-x(X,b). data(Y,Z):-x(Y,b).",
+	"data(X,Y):-x(X,b),y(b,Y). data(Y,Z):-x(Y,b),y(b,Z).",
+}
+
+func TestClause(t *testing.T) {
+	for _, data := range clauseData {
+		in := strings.NewReader(data)
+		parser := NewParser("data", in)
+
+		c1, _, err := parser.Parse()
+		if err != nil {
+			t.Fatalf("Clause1: %s", err)
+		}
+
+		c2, _, err := parser.Parse()
+		if err != nil {
+			t.Fatalf("Clause2: %s", err)
+		}
+		if !c1.Equals(c2) {
+			t.Errorf("%s != %s\n", c1, c2)
+		}
+	}
+}
+
 func TestSLG(t *testing.T) {
 	in := strings.NewReader(input)
 	parser := NewParser("data", in)
-
-	slg := &SLG{}
 
 	for {
 		clause, clauseType, err := parser.Parse()
@@ -39,7 +65,7 @@ func TestSLG(t *testing.T) {
 
 		case ClauseQuery:
 			fmt.Printf("%s%s\n", clause, clauseType)
-			result := slg.Query(clause.Head)
+			result := Query(clause.Head)
 			for _, r := range result {
 				fmt.Printf("=> %s\n", r)
 			}
