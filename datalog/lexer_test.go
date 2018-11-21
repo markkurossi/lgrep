@@ -24,8 +24,8 @@ fact.
 fact~
 
 % Queries
-parent(X, Y)?
-parent(bill, X)?
+%parent(X, Y)?
+%parent(bill, X)?
 
 % rules
 ancestor(X, Y) :- parent(X, Y).

@@ -361,11 +361,28 @@ func (c *Clause) Substitute(env Environment) *Clause {
 
 type SLG struct {
 	Count   int
-	T       []*TableEntry
+	T       *Table
 	S       *Stack
 	DFN     int
 	PosLink int
 	NegLink int
+}
+
+type Table struct {
+	Entries []*TableEntry
+}
+
+func (t *Table) Add(entry *TableEntry) {
+	t.Entries = append(t.Entries, entry)
+}
+
+func (t *Table) Lookup(a *Atom) *TableEntry {
+	for _, entry := range t.Entries {
+		if entry.A.Equals(a) {
+			return entry
+		}
+	}
+	return nil
 }
 
 type TableEntry struct {
@@ -382,16 +399,36 @@ type Pair struct {
 }
 
 type Stack struct {
-	Data []StackEntry
+	Data []*StackEntry
+}
+
+func (s *Stack) Size() int {
+	return len(s.Data)
 }
 
 func (s *Stack) Push(a *Atom, dfn, posLink, negLink int) {
-	s.Data = append(s.Data, StackEntry{
+	s.Data = append(s.Data, &StackEntry{
 		Subgoal: a,
 		DFN:     dfn,
 		PosLink: posLink,
 		NegLink: negLink,
 	})
+}
+
+func (s *Stack) Pop() *StackEntry {
+	l := len(s.Data)
+	entry := s.Data[l-1]
+	s.Data = s.Data[:l-1]
+	return entry
+}
+
+func (s *Stack) Lookup(a *Atom) (*StackEntry, int) {
+	for idx, entry := range s.Data {
+		if entry.Subgoal.Equals(a) {
+			return entry, idx
+		}
+	}
+	return nil, 0
 }
 
 type StackEntry struct {
@@ -403,12 +440,11 @@ type StackEntry struct {
 
 func (slg *SLG) Query(a *Atom) []*Clause {
 	slg.Count = 1
-	slg.T = []*TableEntry{
-		&TableEntry{
-			A:    a,
-			Comp: false,
-		},
-	}
+	slg.T = &Table{}
+	slg.T.Add(&TableEntry{
+		A:    a,
+		Comp: false,
+	})
 	slg.S = &Stack{}
 	slg.DFN = slg.Count
 	slg.PosLink = slg.DFN
@@ -417,17 +453,18 @@ func (slg *SLG) Query(a *Atom) []*Clause {
 	slg.Count++
 	posMin := slg.DFN
 	negMin := math.MaxInt32
-	slg.Subgoal(a, posMin, negMin)
+	slg.Subgoal(a, &posMin, &negMin)
 
 	var result []*Clause
-	for _, e := range slg.T {
+	for _, e := range slg.T.Entries {
 		result = append(result, e.Anss...)
 	}
 	return result
 }
 
-func (slg *SLG) Subgoal(a *Atom, posMin, negMin int) {
+func (slg *SLG) Subgoal(a *Atom, posMin, negMin *int) {
 	// for each SLG resolvent G of A :- A with some clause C e Ka
+	fmt.Printf("SLG.Subgoal(%s)\n", a)
 	clauses := DBClauses(a.Predicate)
 	for _, clause := range clauses {
 		renamed := clause.Rename()
@@ -440,7 +477,7 @@ func (slg *SLG) Subgoal(a *Atom, posMin, negMin int) {
 	slg.Complete(a, posMin, negMin)
 }
 
-func (slg *SLG) NewClause(a *Atom, g *Clause, posMin, negMin int) {
+func (slg *SLG) NewClause(a *Atom, g *Clause, posMin, negMin *int) {
 	if len(g.Body) == 0 {
 		slg.Answer(a, g, posMin, negMin)
 	} else {
@@ -448,33 +485,53 @@ func (slg *SLG) NewClause(a *Atom, g *Clause, posMin, negMin int) {
 	}
 }
 
-func (slg *SLG) Complete(a *Atom, posMin, negMin int) {
+func (slg *SLG) Complete(a *Atom, posMin, negMin *int) {
 	fmt.Printf("SLG.Complete(%s,%d,%d)\n", a, posMin, negMin)
-	//panic("SLG.Complete()")
+	entry, index := slg.S.Lookup(a)
+	if entry == nil {
+		panic(fmt.Sprintf("SLG.Complete(): Atom %s not in result table", a))
+	}
+	if *posMin < entry.PosLink {
+		entry.PosLink = *posMin
+	}
+	if *negMin < entry.NegLink {
+		entry.NegLink = *negMin
+	}
+	if entry.PosLink == entry.DFN && entry.NegLink == math.MaxInt32 {
+		sa := make([]*StackEntry, 0, slg.S.Size()-index)
+		for slg.S.Size() > index {
+			sa = append(sa, slg.S.Pop())
+		}
+		for _, b := range sa {
+			bEntry := slg.T.Lookup(b.Subgoal)
+			// negs := bEntry.Negs
+			bEntry.Comp = true
+			bEntry.Poss = nil
+			bEntry.Negs = nil
+		}
+
+	} else if entry.PosLink == entry.DFN && entry.NegLink >= entry.DFN {
+		fmt.Printf("Complete2\n")
+	}
 }
 
-func (slg *SLG) Answer(a *Atom, g *Clause, posMin, negMin int) {
+func (slg *SLG) Answer(a *Atom, g *Clause, posMin, negMin *int) {
 	fmt.Printf("SLG.Answer(%s,%s,%d,%d)\n", a, g, posMin, negMin)
 	// XXX check if answers could be stored directly to `a'.
-	var tableEntry *TableEntry
-	for _, t := range slg.T {
-		if a.Equals(t.A) {
-			tableEntry = t
-			break
+	entry := slg.T.Lookup(a)
+	if entry == nil {
+		panic(fmt.Sprintf("Atom %s not in result table", a))
+	}
+	for _, ans := range entry.Anss {
+		if g.Equals(ans) {
+			// Answer already added.
+			return
 		}
 	}
-	if tableEntry != nil {
-		for _, ans := range tableEntry.Anss {
-			if g.Equals(ans) {
-				// Answer already added.
-				return
-			}
-		}
-	}
-	tableEntry.Anss = append(tableEntry.Anss, g)
+	entry.Anss = append(entry.Anss, g)
 
 	// XXX if G has no delayed literals
-	for _, pair := range tableEntry.Poss {
+	for _, pair := range entry.Poss {
 		resolvent := pair.H.Resolve(g)
 		if resolvent != nil {
 			slg.NewClause(pair.B.Head, resolvent, posMin, negMin)
@@ -482,7 +539,65 @@ func (slg *SLG) Answer(a *Atom, g *Clause, posMin, negMin int) {
 	}
 }
 
-func (slg *SLG) Positive(a *Atom, g *Clause, b *Atom, posMin, negMin int) {
-	fmt.Printf("SLG.Positive(%s,%s,%d,%d)\n", a, g, posMin, negMin)
-	//panic("SLG.Positive()")
+func (slg *SLG) Positive(a *Atom, g *Clause, b *Atom, posMin, negMin *int) {
+	fmt.Printf("SLG.Positive(%s,%s,%s,%d,%d)\n", a, g, b, posMin, negMin)
+	entry := slg.T.Lookup(b)
+	if entry == nil {
+		slg.T.Add(&TableEntry{
+			A: b,
+			Poss: []*Pair{
+				&Pair{
+					B: &Clause{Head: a},
+					H: g,
+				},
+			},
+		})
+		DFN := slg.Count
+		PosLink := slg.Count
+		NegLink := math.MaxInt32
+		slg.S.Push(b, DFN, PosLink, NegLink)
+		slg.Count++
+		BPosMin := DFN
+		BNegMin := math.MaxInt32
+		slg.Subgoal(b, &BPosMin, &BNegMin)
+		slg.UpdateSolution(a, b, true, posMin, negMin, &BPosMin, &BNegMin)
+	} else {
+		if !entry.Comp && false {
+			entry.Poss = append(entry.Poss, &Pair{
+				B: &Clause{Head: a},
+				H: g,
+			})
+			slg.UpdateLookup(a, b, true, posMin, negMin)
+		}
+		for _, ans := range entry.Anss {
+			resolvent := g.Resolve(ans)
+			if resolvent != nil {
+				slg.NewClause(a, resolvent, posMin, negMin)
+			}
+		}
+	}
+}
+
+func (slg *SLG) UpdateLookup(a, b *Atom, pos bool, posMin, negMin *int) {
+	sa, _ := slg.S.Lookup(a)
+	sb, _ := slg.S.Lookup(b)
+	if pos {
+		if sb.PosLink < sa.PosLink {
+			sa.PosLink = sb.PosLink
+		}
+		if sb.NegLink < sa.NegLink {
+			sa.NegLink = sb.NegLink
+		}
+		if sb.PosLink < *posMin {
+			*posMin = sb.PosLink
+		}
+		if sb.NegLink < *negMin {
+			*negMin = sb.NegLink
+		}
+	} else {
+	}
+}
+
+func (slg *SLG) UpdateSolution(a, b *Atom, pos bool,
+	posMin, negMin, bPosMin, bNegMin *int) {
 }
