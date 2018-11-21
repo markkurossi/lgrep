@@ -181,7 +181,7 @@ func (a *Atom) String() string {
 		str += "("
 		for idx, term := range a.Terms {
 			if idx > 0 {
-				str += ","
+				str += ", "
 			}
 			str += term.String()
 		}
@@ -219,6 +219,9 @@ func (a *Atom) Substitute(env Environment) *Atom {
 // Unify
 func (a *Atom) Unify(o *Atom) Environment {
 	if a.Predicate != o.Predicate {
+		return nil
+	}
+	if len(a.Terms) != len(o.Terms) {
 		return nil
 	}
 	env := NewEnvironment()
@@ -284,7 +287,7 @@ func (c *Clause) String() string {
 		str += " :- "
 		for idx, literal := range c.Body {
 			if idx > 0 {
-				str += ","
+				str += ", "
 			}
 			str += literal.String()
 		}
@@ -362,7 +365,7 @@ func (e Environment) String() string {
 	var str string
 	for k, v := range e {
 		if len(str) > 0 {
-			str += ","
+			str += ", "
 		}
 		str += fmt.Sprintf("%s=%s", k, v)
 	}
