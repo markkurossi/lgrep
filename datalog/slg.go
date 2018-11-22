@@ -10,7 +10,6 @@ package datalog
 
 import (
 	"fmt"
-	"time"
 )
 
 // A `program' is a finite set of clauses of the form:
@@ -48,174 +47,17 @@ import (
 //                           v        v        v
 //                         tc(a,c). tc(a,a). tc(a,b).
 
-type TermType int
-
-const (
-	Variable TermType = iota
-	Constant
-)
-
-type Term interface {
-	Type() TermType
-	Variable() Symbol
-	Rename(env Environment)
-	Substitute(env Environment) Term
-	Unify(t Term, env Environment) Environment
-	Equals(t Term) bool
-	String() string
-}
-
-type TermVariable struct {
-	Symbol Symbol
-}
-
-func NewTermVariable(symbol Symbol) Term {
-	return &TermVariable{
-		Symbol: symbol,
-	}
-}
-
-func (t *TermVariable) Type() TermType {
-	return Variable
-}
-
-func (t *TermVariable) Variable() Symbol {
-	return t.Symbol
-}
-
-func (t *TermVariable) Rename(env Environment) {
-	env[t.Symbol] = NewTermVariable(newUniqueSymbol())
-}
-
-func (t *TermVariable) Substitute(env Environment) Term {
-	subst := env[t.Symbol]
-	if subst != nil {
-		return subst
-	}
-	return t
-}
-
-func (t *TermVariable) Unify(other Term, env Environment) Environment {
-	switch o := other.(type) {
-	case *TermVariable:
-		env[o.Symbol] = t
-
-	case *TermConstant:
-		env[t.Symbol] = o
-	}
-	return env
-}
-
-func (t *TermVariable) Equals(other Term) bool {
-	switch o := other.(type) {
-	case *TermVariable:
-		return t.Symbol == o.Symbol
-	}
-	return false
-}
-
-func (t *TermVariable) String() string {
-	return t.Symbol.String()
-}
-
-type TermConstant struct {
-	Value      string
-	Stringlike bool
-}
-
-func NewTermConstant(value string, stringlike bool) Term {
-	return &TermConstant{
-		Value:      value,
-		Stringlike: stringlike,
-	}
-}
-
-func (t *TermConstant) Type() TermType {
-	return Constant
-}
-
-func (t *TermConstant) Variable() Symbol {
-	return NilSymbol
-}
-
-func (t *TermConstant) Rename(env Environment) {
-}
-
-func (t *TermConstant) Substitute(env Environment) Term {
-	return t
-}
-
-func (t *TermConstant) Unify(other Term, env Environment) Environment {
-	switch o := other.(type) {
-	case *TermVariable:
-		env[o.Symbol] = t
-		return env
-
-	case *TermConstant:
-		if t.Value == o.Value {
-			return env
-		}
-	}
-
-	return nil
-}
-
-func (t *TermConstant) Equals(other Term) bool {
-	switch o := other.(type) {
-	case *TermConstant:
-		return t.Value == o.Value
-	}
-
-	return false
-}
-
-func (t *TermConstant) String() string {
-	if t.Stringlike {
-		return Stringify(t.Value)
-	} else {
-		return t.Value
-	}
-}
-
-type Atom struct {
-	Predicate Symbol
-	Terms     []Term
-}
-
-func NewAtom(predicate Symbol, terms []Term) *Atom {
-	return &Atom{
-		Predicate: predicate,
-		Terms:     terms,
-	}
-}
-
-func (a *Atom) String() string {
-	str := a.Predicate.String()
-	if len(a.Terms) > 0 {
-		str += "("
-		for idx, term := range a.Terms {
-			if idx > 0 {
-				str += ", "
-			}
-			str += term.String()
-		}
-		str += ")"
-	}
-	return str
-}
-
-// Rename
 func (a *Atom) RenameVariables(env Environment) Environment {
 	for _, term := range a.Terms {
 		term.Rename(env)
 	}
 	return env
 }
+
 func (a *Atom) Rename() *Atom {
 	return a.Substitute(a.RenameVariables(NewEnvironment()))
 }
 
-// Substitute
 func (a *Atom) Substitute(env Environment) *Atom {
 	if len(env) == 0 {
 		return a
@@ -230,7 +72,6 @@ func (a *Atom) Substitute(env Environment) *Atom {
 	return n
 }
 
-// Unify
 func (a *Atom) Unify(o *Atom) Environment {
 	if a.Predicate != o.Predicate {
 		return nil
@@ -250,93 +91,6 @@ func (a *Atom) Unify(o *Atom) Environment {
 		}
 	}
 	return env
-}
-
-func (a *Atom) EqualsWithMapping(o *Atom, mapping map[Symbol]Symbol) bool {
-	if a.Predicate != o.Predicate {
-		return false
-	}
-	if len(a.Terms) != len(o.Terms) {
-		return false
-	}
-
-	for idx, t := range a.Terms {
-		ot := o.Terms[idx]
-
-		switch t.Type() {
-		case Variable:
-			if ot.Type() != Variable {
-				return false
-			}
-			mapped, ok := mapping[t.Variable()]
-			if ok {
-				if mapped != ot.Variable() {
-					return false
-				}
-			} else {
-				mapping[t.Variable()] = ot.Variable()
-			}
-
-		case Constant:
-			if !t.Equals(ot) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (a *Atom) Equals(o *Atom) bool {
-	return a.EqualsWithMapping(o, make(map[Symbol]Symbol))
-}
-
-type Clause struct {
-	Timestamp int64
-	Head      *Atom
-	Body      []*Atom
-}
-
-func (c *Clause) Fact() bool {
-	return len(c.Body) == 0
-}
-
-func NewClause(head *Atom, body []*Atom) *Clause {
-	return &Clause{
-		Timestamp: time.Now().Unix(),
-		Head:      head,
-		Body:      body,
-	}
-}
-
-func (c *Clause) String() string {
-	str := c.Head.String()
-	if len(c.Body) > 0 {
-		str += " :- "
-		for idx, literal := range c.Body {
-			if idx > 0 {
-				str += ", "
-			}
-			str += literal.String()
-		}
-	}
-	return str
-}
-
-func (c *Clause) Equals(o *Clause) bool {
-	mapping := make(map[Symbol]Symbol)
-
-	if !c.Head.EqualsWithMapping(o.Head, mapping) {
-		return false
-	}
-	if len(c.Body) != len(o.Body) {
-		return false
-	}
-	for idx, a := range c.Body {
-		if !a.EqualsWithMapping(o.Body[idx], mapping) {
-			return false
-		}
-	}
-	return true
 }
 
 func (c *Clause) Resolve(a *Clause) *Clause {
@@ -363,30 +117,6 @@ func (c *Clause) Resolve(a *Clause) *Clause {
 	}
 }
 
-type ClauseType int
-
-const (
-	ClauseError ClauseType = iota
-	ClauseFact
-	ClauseRetract
-	ClauseQuery
-)
-
-func (t ClauseType) String() string {
-	switch t {
-	case ClauseError:
-		return "{error}"
-	case ClauseFact:
-		return "."
-	case ClauseRetract:
-		return "~"
-	case ClauseQuery:
-		return "?"
-	default:
-		return fmt.Sprintf("{%d}", t)
-	}
-}
-
 type Environment map[Symbol]Term
 
 func NewEnvironment() Environment {
@@ -404,7 +134,6 @@ func (e Environment) String() string {
 	return "[" + str + "]"
 }
 
-// Rename
 func (c *Clause) Rename() *Clause {
 	env := NewEnvironment()
 	for _, atom := range c.Body {
@@ -416,7 +145,6 @@ func (c *Clause) Rename() *Clause {
 	return c.Substitute(env)
 }
 
-// Substitute
 func (c *Clause) Substitute(env Environment) *Clause {
 	if len(env) == 0 {
 		return c
@@ -432,14 +160,12 @@ func (c *Clause) Substitute(env Environment) *Clause {
 	return n
 }
 
-// Table
 type Goals struct {
 	db      DB
-	from    int64
+	limits  Predicates
 	entries []*Subgoal
 }
 
-// Add
 func (g *Goals) Add(entry *Subgoal) {
 	e := g.Lookup(entry.Atom)
 	if e == nil {
@@ -460,9 +186,8 @@ func (g *Goals) Lookup(a *Atom) *Subgoal {
 	return nil
 }
 
-// Search
 func (g *Goals) Search(sg *Subgoal) {
-	clauses := g.db.Get(sg.Atom.Predicate, g.from)
+	clauses := g.db.Get(sg.Atom.Predicate, g.limits)
 	for _, clause := range clauses {
 		renamed := clause.Rename()
 		env := sg.Atom.Unify(renamed.Head)
@@ -473,7 +198,6 @@ func (g *Goals) Search(sg *Subgoal) {
 	}
 }
 
-// NewClause
 func (g *Goals) NewClause(sg *Subgoal, c *Clause) {
 	if len(c.Body) == 0 {
 		g.Fact(sg, c)
@@ -482,7 +206,6 @@ func (g *Goals) NewClause(sg *Subgoal, c *Clause) {
 	}
 }
 
-// Fact
 func (g *Goals) Fact(sg *Subgoal, a *Clause) {
 	if sg.AddFact(a) {
 		for _, w := range sg.Waiters {
@@ -494,7 +217,6 @@ func (g *Goals) Fact(sg *Subgoal, a *Clause) {
 	}
 }
 
-// Rule
 func (g *Goals) Rule(subgoal *Subgoal, c *Clause, selected *Atom) {
 	sg := g.Lookup(selected)
 	if sg != nil {
@@ -529,7 +251,6 @@ type Subgoal struct {
 	Waiters []Waiter
 }
 
-// AddFact
 func (s *Subgoal) AddFact(a *Clause) bool {
 	for _, fact := range s.Facts {
 		if fact.Head.Equals(a.Head) {
@@ -545,11 +266,10 @@ type Waiter struct {
 	Goal *Subgoal
 }
 
-// Query
-func Query(a *Atom, db DB, from int64) []*Clause {
+func Query(a *Atom, db DB, limits Predicates) []*Clause {
 	goals := &Goals{
-		db:   db,
-		from: from,
+		db:     db,
+		limits: limits,
 	}
 	sg := &Subgoal{
 		Atom: a,

@@ -10,7 +10,7 @@ package datalog
 
 type DB interface {
 	Add(clause *Clause)
-	Get(predicate Symbol, from int64) []*Clause
+	Get(predicate Symbol, limits Predicates) []*Clause
 }
 
 type MemDB struct {
@@ -32,10 +32,10 @@ func (db *MemDB) Add(clause *Clause) {
 	db.clauses[clause.Head.Predicate] = arr
 }
 
-func (db *MemDB) Get(predicate Symbol, from int64) []*Clause {
+func (db *MemDB) Get(predicate Symbol, limits Predicates) []*Clause {
 	var result []*Clause
 	for _, c := range db.clauses[predicate] {
-		if !c.Fact() || c.Timestamp > from {
+		if !c.Fact() || c.Timestamp > limits[predicate] {
 			result = append(result, c)
 		}
 	}

@@ -28,7 +28,13 @@ var logHandlers = map[string]handlers.Func{
 }
 
 var db datalog.DB
-var queries []*datalog.Clause
+
+type Query struct {
+	Clause     *datalog.Clause
+	Predicates datalog.Predicates
+}
+
+var queries []*Query
 
 func main() {
 	verbose := flag.Bool("v", false, "Verbose output")
@@ -89,10 +95,12 @@ func main() {
 
 		// Execute queries.
 		for _, q := range queries {
-			result := datalog.Query(q.Head, db, q.Timestamp)
+			result := datalog.Query(q.Clause.Head, db, q.Predicates)
 			for _, r := range result {
-				if r.Timestamp > q.Timestamp {
-					q.Timestamp = r.Timestamp
+				for k, v := range q.Predicates {
+					if r.Timestamp > v {
+						q.Predicates[k] = r.Timestamp
+					}
 				}
 				fmt.Printf("%s\n", r)
 			}
@@ -121,8 +129,17 @@ func readInit(file string) error {
 
 		case datalog.ClauseQuery:
 			fmt.Printf("Query: %s%s\n", clause, clauseType)
-			queries = append(queries, clause)
+			queries = append(queries, &Query{
+				Clause: clause,
+			})
 		}
 	}
+
+	// Resolve all predicates, referenced by queries.
+	for _, q := range queries {
+		q.Predicates = q.Clause.Predicates(db)
+		fmt.Printf("%s => %s\n", q.Clause, q.Predicates)
+	}
+
 	return nil
 }
