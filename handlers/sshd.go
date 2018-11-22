@@ -59,8 +59,13 @@ var matches = []match{
 	},
 	// Starting session: shell on pts/8 for mtr from 10.0.2.2 port 56963 id 0
 	match{
-		P: "sshd-session-start",
+		P: "sshd-start-session",
 		R: regexp.MustCompile(`^Starting session: (.*) for (\S+) from (\S+) port (\d+) id (\d+)`),
+	},
+	// Close session: user mtr from 10.0.2.2 port 59132 id 0
+	match{
+		P: "sshd-close-session",
+		R: regexp.MustCompile(`^Close session: user (\S+) from (\S+) port (\d+) id (\d+)`),
 	},
 	// Received disconnect from 10.0.2.2 port 56821:11: disconnected by user
 	match{

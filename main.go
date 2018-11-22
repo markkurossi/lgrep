@@ -138,7 +138,9 @@ func readInit(file string) error {
 	// Resolve all predicates, referenced by queries.
 	for _, q := range queries {
 		q.Predicates = q.Clause.Predicates(db)
-		fmt.Printf("%s => %s\n", q.Clause, q.Predicates)
+		if false {
+			fmt.Printf("%s => %s\n", q.Clause, q.Predicates)
+		}
 	}
 
 	return nil

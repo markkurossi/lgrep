@@ -11,7 +11,16 @@ ssh-pubkey-login(User, ClientIP, ClientPort, KeyType, Fingerprint, Type) :-
                      User, ClientIP, ClientPort, KeyType, Fingerprint),
     sshd-user-child-pid(_, _, _, _, Ident, Pid, _,
                         ChildPid),
-    sshd-session-start(_, _, _, _, _, ChildPid, _,
+    sshd-start-session(_, _, _, _, _, ChildPid, _,
+                       Type, _, _, _, _).
+
+ssh-passwd-login(User, ClientIP, ClientPort, Type) :-
+    sshd-auth-password(_, _, _, _, Ident, Pid, _,
+                       User, ClientIP, ClientPort),
+    sshd-user-child-pid(_, _, _, _, Ident, Pid, _,
+                        ChildPid),
+    sshd-start-session(_, _, _, _, _, ChildPid, _,
                        Type, _, _, _, _).
 
 ssh-pubkey-login(User, ClientIP, ClientPort, KeyType, Fingerprint, Type)?
+ssh-passwd-login(User, ClientIP, ClientPort, Type)?
