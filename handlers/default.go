@@ -15,7 +15,7 @@ import (
 	"github.com/markkurossi/lgrep/syslog"
 )
 
-func Default(e *syslog.Event, db datalog.DB) {
+func Default(e *syslog.Event, db datalog.DB, verbose bool) {
 	var predicate string
 	if len(e.Ident) > 0 {
 		predicate = e.Ident
@@ -26,6 +26,8 @@ func Default(e *syslog.Event, db datalog.DB) {
 	terms := EventTerms(e)
 	sym, _ := datalog.Intern(predicate, true)
 	clause := datalog.NewClause(datalog.NewAtom(sym, terms), nil)
-	fmt.Printf("%s.\n", clause)
+	if verbose {
+		fmt.Printf("%s.\n", clause)
+	}
 	db.Add(clause)
 }

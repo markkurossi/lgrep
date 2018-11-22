@@ -90,25 +90,29 @@ var matches = []match{
 	},
 }
 
-func SSHD(e *syslog.Event, db datalog.DB) {
+func SSHD(e *syslog.Event, db datalog.DB, verbose bool) {
 	for _, matcher := range matches {
 		m := matcher.R.FindStringSubmatch(e.Message)
 		if m == nil {
 			continue
 		}
-		event(db, matcher.P, e, m[1:])
+		event(db, matcher.P, e, m[1:], verbose)
 		return
 	}
 	fmt.Printf("%% SSHD: %s\n", e.Message)
 }
 
-func event(db datalog.DB, predicate string, e *syslog.Event, extra []string) {
+func event(db datalog.DB, predicate string, e *syslog.Event, extra []string,
+	verbose bool) {
+
 	terms := EventTerms(e)
 	for _, e := range extra {
 		terms = append(terms, datalog.NewTermConstant(e, true))
 	}
 	sym, _ := datalog.Intern(predicate, true)
 	clause := datalog.NewClause(datalog.NewAtom(sym, terms), nil)
-	fmt.Printf("%s.\n", clause)
+	if verbose {
+		fmt.Printf("%s.\n", clause)
+	}
 	db.Add(clause)
 }

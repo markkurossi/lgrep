@@ -10,6 +10,7 @@ package datalog
 
 import (
 	"fmt"
+	"time"
 )
 
 // A `program' is a finite set of clauses of the form:
@@ -290,14 +291,20 @@ func (a *Atom) Equals(o *Atom) bool {
 }
 
 type Clause struct {
-	Head *Atom
-	Body []*Atom
+	Timestamp int64
+	Head      *Atom
+	Body      []*Atom
+}
+
+func (c *Clause) Fact() bool {
+	return len(c.Body) == 0
 }
 
 func NewClause(head *Atom, body []*Atom) *Clause {
 	return &Clause{
-		Head: head,
-		Body: body,
+		Timestamp: time.Now().Unix(),
+		Head:      head,
+		Body:      body,
 	}
 }
 
@@ -332,11 +339,11 @@ func (c *Clause) Equals(o *Clause) bool {
 	return true
 }
 
-func (c *Clause) Resolve(a *Atom) *Clause {
+func (c *Clause) Resolve(a *Clause) *Clause {
 	if len(c.Body) == 0 {
 		return nil
 	}
-	renamed := a.Rename()
+	renamed := a.Head.Rename()
 	env := c.Body[0].Unify(renamed)
 	if env == nil {
 		return nil
@@ -345,9 +352,14 @@ func (c *Clause) Resolve(a *Atom) *Clause {
 	for idx, t := range c.Body[1:] {
 		newBody[idx] = t.Substitute(env)
 	}
+	var timestamp = a.Timestamp
+	if c.Timestamp > timestamp {
+		timestamp = c.Timestamp
+	}
 	return &Clause{
-		Head: c.Head.Substitute(env),
-		Body: newBody,
+		Timestamp: timestamp,
+		Head:      c.Head.Substitute(env),
+		Body:      newBody,
 	}
 }
 
@@ -410,8 +422,9 @@ func (c *Clause) Substitute(env Environment) *Clause {
 		return c
 	}
 	n := &Clause{
-		Head: c.Head.Substitute(env),
-		Body: make([]*Atom, 0, len(c.Body)),
+		Timestamp: c.Timestamp,
+		Head:      c.Head.Substitute(env),
+		Body:      make([]*Atom, 0, len(c.Body)),
 	}
 	for _, a := range c.Body {
 		n.Body = append(n.Body, a.Substitute(env))
@@ -422,6 +435,7 @@ func (c *Clause) Substitute(env Environment) *Clause {
 // Table
 type Goals struct {
 	db      DB
+	from    int64
 	entries []*Subgoal
 }
 
@@ -448,7 +462,7 @@ func (g *Goals) Lookup(a *Atom) *Subgoal {
 
 // Search
 func (g *Goals) Search(sg *Subgoal) {
-	clauses := g.db.Get(sg.Atom.Predicate)
+	clauses := g.db.Get(sg.Atom.Predicate, g.from)
 	for _, clause := range clauses {
 		renamed := clause.Rename()
 		env := sg.Atom.Unify(renamed.Head)
@@ -462,14 +476,14 @@ func (g *Goals) Search(sg *Subgoal) {
 // NewClause
 func (g *Goals) NewClause(sg *Subgoal, c *Clause) {
 	if len(c.Body) == 0 {
-		g.Fact(sg, c.Head)
+		g.Fact(sg, c)
 	} else {
 		g.Rule(sg, c, c.Body[0])
 	}
 }
 
 // Fact
-func (g *Goals) Fact(sg *Subgoal, a *Atom) {
+func (g *Goals) Fact(sg *Subgoal, a *Clause) {
 	if sg.AddFact(a) {
 		for _, w := range sg.Waiters {
 			resolvent := w.C.Resolve(a)
@@ -511,14 +525,14 @@ func (g *Goals) Rule(subgoal *Subgoal, c *Clause, selected *Atom) {
 
 type Subgoal struct {
 	Atom    *Atom
-	Facts   []*Atom
+	Facts   []*Clause
 	Waiters []Waiter
 }
 
 // AddFact
-func (s *Subgoal) AddFact(a *Atom) bool {
+func (s *Subgoal) AddFact(a *Clause) bool {
 	for _, fact := range s.Facts {
-		if fact.Equals(a) {
+		if fact.Head.Equals(a.Head) {
 			return false
 		}
 	}
@@ -532,9 +546,10 @@ type Waiter struct {
 }
 
 // Query
-func Query(a *Atom, db DB) []*Atom {
+func Query(a *Atom, db DB, from int64) []*Clause {
 	goals := &Goals{
-		db: db,
+		db:   db,
+		from: from,
 	}
 	sg := &Subgoal{
 		Atom: a,

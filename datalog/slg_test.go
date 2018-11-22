@@ -67,7 +67,7 @@ func TestSLG(t *testing.T) {
 
 		case ClauseQuery:
 			fmt.Printf("%s%s\n", clause, clauseType)
-			result := Query(clause.Head, db)
+			result := Query(clause.Head, db, 0)
 			for _, r := range result {
 				fmt.Printf("=> %s\n", r)
 			}
@@ -101,7 +101,7 @@ func BenchmarkEval(b *testing.B) {
 				db.Add(clause)
 
 			case ClauseQuery:
-				result := Query(clause.Head, db)
+				result := Query(clause.Head, db, 0)
 				for _, r := range result {
 					fmt.Printf("=> %s\n", r)
 				}

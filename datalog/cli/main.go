@@ -51,7 +51,7 @@ func processFile(file string, db datalog.DB) error {
 
 		case datalog.ClauseQuery:
 			fmt.Printf("%s%s\n", clause, clauseType)
-			result := datalog.Query(clause.Head, db)
+			result := datalog.Query(clause.Head, db, 0)
 			for _, r := range result {
 				fmt.Printf("=> %s\n", r)
 			}

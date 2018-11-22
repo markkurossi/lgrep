@@ -10,9 +10,12 @@ package main
 
 import (
 	"encoding/hex"
+	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"github.com/markkurossi/lgrep/datalog"
@@ -20,13 +23,18 @@ import (
 	"github.com/markkurossi/lgrep/syslog"
 )
 
-type LogHandler func(e *syslog.Event, db datalog.DB)
-
-var logHandlers = map[string]LogHandler{
+var logHandlers = map[string]handlers.Func{
 	"sshd": handlers.SSHD,
 }
 
+var db datalog.DB
+var queries []*datalog.Clause
+
 func main() {
+	verbose := flag.Bool("v", false, "Verbose output")
+	init := flag.String("init", "", "Init file")
+	flag.Parse()
+
 	addr, err := net.ResolveUDPAddr("udp", ":1514")
 	if err != nil {
 		log.Fatalf("ResolveUDPAddr: %s\n", err)
@@ -38,7 +46,14 @@ func main() {
 	defer conn.Close()
 	log.Printf("Listening at %s\n", addr)
 
-	db := datalog.NewMemDB()
+	db = datalog.NewMemDB()
+
+	if len(*init) > 0 {
+		err = readInit(*init)
+		if err != nil {
+			log.Fatalf("Failed to read init file: %s\n", err)
+		}
+	}
 
 	var buf [1024]byte
 	for {
@@ -55,7 +70,7 @@ func main() {
 		}
 		fn, ok := logHandlers[event.Ident]
 		if ok {
-			fn(event, db)
+			fn(event, db, *verbose)
 		} else {
 			if false {
 				fmt.Printf("%s @ %s\n   Facility : %s\n   Severity : %s\n  Timestamp : %s\n   Hostname : %s\n      Ident : %s\n        Pid : %d\n    Message : %s\n",
@@ -68,8 +83,46 @@ func main() {
 					event.Pid,
 					event.Message)
 			} else {
-				handlers.Default(event, db)
+				handlers.Default(event, db, *verbose)
+			}
+		}
+
+		// Execute queries.
+		for _, q := range queries {
+			result := datalog.Query(q.Head, db, q.Timestamp)
+			for _, r := range result {
+				if r.Timestamp > q.Timestamp {
+					q.Timestamp = r.Timestamp
+				}
+				fmt.Printf("%s\n", r)
 			}
 		}
 	}
+}
+
+func readInit(file string) error {
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	parser := datalog.NewParser(file, f)
+	for {
+		clause, clauseType, err := parser.Parse()
+		if err != nil {
+			if err != io.EOF {
+				return err
+			}
+			break
+		}
+		switch clauseType {
+		case datalog.ClauseFact:
+			db.Add(clause)
+
+		case datalog.ClauseQuery:
+			fmt.Printf("Query: %s%s\n", clause, clauseType)
+			queries = append(queries, clause)
+		}
+	}
+	return nil
 }
