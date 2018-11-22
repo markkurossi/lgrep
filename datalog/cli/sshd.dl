@@ -1,5 +1,13 @@
-ssh-pubkey-login(User, ClientIP, ClientPort, KeyType, Fingerprint, Type)
- :- sshd-auth-pubkey(_, _, _, _, Ident, Pid, _,
+%
+% lexer.go
+%
+% Copyright (c) 2018 Markku Rossi
+%
+% All rights reserved.
+%
+
+ssh-pubkey-login(User, ClientIP, ClientPort, KeyType, Fingerprint, Type) :-
+    sshd-auth-pubkey(_, _, _, _, Ident, Pid, _,
                      User, ClientIP, ClientPort, KeyType, Fingerprint),
     sshd-user-child-pid(_, _, _, _, Ident, Pid, _,
                         ChildPid),

@@ -426,10 +426,10 @@ type Goals struct {
 }
 
 // Add
-func (t *Goals) Add(entry *Subgoal) {
-	e := t.Lookup(entry.Atom)
+func (g *Goals) Add(entry *Subgoal) {
+	e := g.Lookup(entry.Atom)
 	if e == nil {
-		t.entries = append(t.entries, entry)
+		g.entries = append(g.entries, entry)
 	} else {
 		e.Atom = entry.Atom
 		e.Facts = entry.Facts
@@ -437,8 +437,8 @@ func (t *Goals) Add(entry *Subgoal) {
 	}
 }
 
-func (t *Goals) Lookup(a *Atom) *Subgoal {
-	for _, entry := range t.entries {
+func (g *Goals) Lookup(a *Atom) *Subgoal {
+	for _, entry := range g.entries {
 		if entry.Atom.Equals(a) {
 			return entry
 		}
