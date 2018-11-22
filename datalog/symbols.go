@@ -37,7 +37,7 @@ func (s Symbol) String() string {
 	m.Unlock()
 	if ok {
 		if name.Stringlike {
-			return stringify(name.Name)
+			return Stringify(name.Name)
 		}
 		return name.Name
 	}
@@ -45,20 +45,25 @@ func (s Symbol) String() string {
 	return fmt.Sprintf(":%d", s)
 }
 
-func intern(symbol string, stringlike bool) Symbol {
+func Intern(value string, stringlike bool) (Symbol, string) {
 	m.Lock()
-	id, ok := symbolsByName[symbol]
-	if !ok {
+	var name SymbolName
+	id, ok := symbolsByName[value]
+	if ok {
+		name = symbolsByID[id]
+	} else {
 		id = nextSymbolID
 		nextSymbolID++
-		symbolsByName[symbol] = id
-		symbolsByID[id] = SymbolName{
-			Name:       symbol,
+		symbolsByName[value] = id
+
+		name = SymbolName{
+			Name:       value,
 			Stringlike: stringlike,
 		}
+		symbolsByID[id] = name
 	}
 	m.Unlock()
-	return id
+	return id, name.Name
 }
 
 func newUniqueSymbol() Symbol {

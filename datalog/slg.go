@@ -118,12 +118,14 @@ func (t *TermVariable) String() string {
 }
 
 type TermConstant struct {
-	Value string
+	Value      string
+	Stringlike bool
 }
 
-func NewTermConstant(value string) Term {
+func NewTermConstant(value string, stringlike bool) Term {
 	return &TermConstant{
-		Value: value,
+		Value:      value,
+		Stringlike: stringlike,
 	}
 }
 
@@ -167,12 +169,23 @@ func (t *TermConstant) Equals(other Term) bool {
 }
 
 func (t *TermConstant) String() string {
-	return t.Value
+	if t.Stringlike {
+		return Stringify(t.Value)
+	} else {
+		return t.Value
+	}
 }
 
 type Atom struct {
 	Predicate Symbol
 	Terms     []Term
+}
+
+func NewAtom(predicate Symbol, terms []Term) *Atom {
+	return &Atom{
+		Predicate: predicate,
+		Terms:     terms,
+	}
 }
 
 func (a *Atom) String() string {
@@ -279,6 +292,13 @@ func (a *Atom) Equals(o *Atom) bool {
 type Clause struct {
 	Head *Atom
 	Body []*Atom
+}
+
+func NewClause(head *Atom, body []*Atom) *Clause {
+	return &Clause{
+		Head: head,
+		Body: body,
+	}
 }
 
 func (c *Clause) String() string {
@@ -401,14 +421,15 @@ func (c *Clause) Substitute(env Environment) *Clause {
 
 // Table
 type Goals struct {
-	Entries []*Subgoal
+	db      DB
+	entries []*Subgoal
 }
 
 // Add
 func (t *Goals) Add(entry *Subgoal) {
 	e := t.Lookup(entry.Atom)
 	if e == nil {
-		t.Entries = append(t.Entries, entry)
+		t.entries = append(t.entries, entry)
 	} else {
 		e.Atom = entry.Atom
 		e.Facts = entry.Facts
@@ -417,7 +438,7 @@ func (t *Goals) Add(entry *Subgoal) {
 }
 
 func (t *Goals) Lookup(a *Atom) *Subgoal {
-	for _, entry := range t.Entries {
+	for _, entry := range t.entries {
 		if entry.Atom.Equals(a) {
 			return entry
 		}
@@ -426,14 +447,14 @@ func (t *Goals) Lookup(a *Atom) *Subgoal {
 }
 
 // Search
-func (t *Goals) Search(sg *Subgoal) {
-	clauses := DBClauses(sg.Atom.Predicate)
+func (g *Goals) Search(sg *Subgoal) {
+	clauses := g.db.Get(sg.Atom.Predicate)
 	for _, clause := range clauses {
 		renamed := clause.Rename()
 		env := sg.Atom.Unify(renamed.Head)
 		if env != nil {
 			substituted := renamed.Substitute(env)
-			t.NewClause(sg, substituted)
+			g.NewClause(sg, substituted)
 		}
 	}
 }
@@ -511,8 +532,10 @@ type Waiter struct {
 }
 
 // Query
-func Query(a *Atom) []*Atom {
-	goals := &Goals{}
+func Query(a *Atom, db DB) []*Atom {
+	goals := &Goals{
+		db: db,
+	}
 	sg := &Subgoal{
 		Atom: a,
 	}

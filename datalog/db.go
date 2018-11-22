@@ -8,17 +8,30 @@
 
 package datalog
 
-var clauses = make(map[Symbol][]*Clause)
+type DB interface {
+	Add(clause *Clause)
+	Get(predicate Symbol) []*Clause
+}
 
-func DBAdd(clause *Clause) {
-	arr, ok := clauses[clause.Head.Predicate]
+type MemDB struct {
+	clauses map[Symbol][]*Clause
+}
+
+func NewMemDB() DB {
+	return &MemDB{
+		clauses: make(map[Symbol][]*Clause),
+	}
+}
+
+func (db *MemDB) Add(clause *Clause) {
+	arr, ok := db.clauses[clause.Head.Predicate]
 	if !ok {
 		arr = make([]*Clause, 0, 10)
 	}
 	arr = append(arr, clause)
-	clauses[clause.Head.Predicate] = arr
+	db.clauses[clause.Head.Predicate] = arr
 }
 
-func DBClauses(predicate Symbol) []*Clause {
-	return clauses[predicate]
+func (db *MemDB) Get(predicate Symbol) []*Clause {
+	return db.clauses[predicate]
 }

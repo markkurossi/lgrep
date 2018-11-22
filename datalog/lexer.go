@@ -152,6 +152,7 @@ func (l *Lexer) readVariable(r rune) (*Token, error) {
 			break
 		}
 	}
+
 	return &Token{
 		Type:     TokenVariable,
 		Value:    string(value),
@@ -209,7 +210,7 @@ func (l *Lexer) readString() (*Token, error) {
 	}, nil
 }
 
-func stringify(val string) string {
+func Stringify(val string) string {
 	result := []rune{'"'}
 	for _, r := range val {
 		switch r {
@@ -252,9 +253,16 @@ func (l *Lexer) readIdentifier(r rune) (*Token, error) {
 			break
 		}
 	}
+	str := string(value)
+	if str == "_" {
+		return &Token{
+			Type:     TokenWildcard,
+			Position: *l.last,
+		}, nil
+	}
 	return &Token{
 		Type:     TokenIdentifier,
-		Value:    string(value),
+		Value:    str,
 		Position: *l.last,
 	}, nil
 }
@@ -278,6 +286,7 @@ const (
 	TokenArrow TokenType = iota + 256
 	TokenError
 	TokenVariable
+	TokenWildcard
 	TokenIdentifier
 	TokenString
 )
@@ -295,6 +304,8 @@ func (t *Token) String() string {
 		return ":-"
 	} else if t.Type == TokenError {
 		return "{error}"
+	} else if t.Type == TokenWildcard {
+		return "_"
 	} else {
 		return t.Value
 	}

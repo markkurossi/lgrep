@@ -16,12 +16,15 @@ import (
 )
 
 var reEvent = regexp.MustCompile(`^<(\d+)>([[:alpha:]]{3} [ 0-9]{2} \S+) (\S+) (.*)$`)
+var reIdent = regexp.MustCompile(`^([^[]+)\[([[:digit:]]+)\]:\s*(.*)$`)
 
 type Event struct {
 	Facility  Facility
 	Severity  Severity
 	Timestamp time.Time
 	Hostname  string
+	Ident     string
+	Pid       int
 	Message   string
 }
 
@@ -147,11 +150,29 @@ func Parse(data []byte) (*Event, error) {
 		timestamp = timestamp.AddDate(now.Year(), 0, 0)
 	}
 
+	var ident string
+	var message string
+	var pid int
+
+	mm := reIdent.FindSubmatch(m[4])
+	if mm == nil {
+		message = string(m[4])
+	} else {
+		ident = string(mm[1])
+		message = string(mm[3])
+		pid, err = strconv.Atoi(string(mm[2]))
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &Event{
 		Facility:  Facility(facility),
 		Severity:  Severity(severity),
 		Timestamp: timestamp,
 		Hostname:  string(m[3]),
-		Message:   string(m[4]),
+		Ident:     ident,
+		Pid:       pid,
+		Message:   message,
 	}, nil
 }

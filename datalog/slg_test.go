@@ -47,6 +47,7 @@ func TestClause(t *testing.T) {
 func TestSLG(t *testing.T) {
 	in := strings.NewReader(input)
 	parser := NewParser("data", in)
+	db := NewMemDB()
 
 	for {
 		clause, clauseType, err := parser.Parse()
@@ -62,11 +63,11 @@ func TestSLG(t *testing.T) {
 
 		switch clauseType {
 		case ClauseFact:
-			DBAdd(clause)
+			db.Add(clause)
 
 		case ClauseQuery:
 			fmt.Printf("%s%s\n", clause, clauseType)
-			result := Query(clause.Head)
+			result := Query(clause.Head, db)
 			for _, r := range result {
 				fmt.Printf("=> %s\n", r)
 			}
@@ -85,6 +86,7 @@ func BenchmarkEval(b *testing.B) {
 		defer f.Close()
 
 		parser := NewParser(file, f)
+		db := NewMemDB()
 		for {
 			clause, clauseType, err := parser.Parse()
 			if err != nil {
@@ -96,10 +98,10 @@ func BenchmarkEval(b *testing.B) {
 			}
 			switch clauseType {
 			case ClauseFact:
-				DBAdd(clause)
+				db.Add(clause)
 
 			case ClauseQuery:
-				result := Query(clause.Head)
+				result := Query(clause.Head, db)
 				for _, r := range result {
 					fmt.Printf("=> %s\n", r)
 				}

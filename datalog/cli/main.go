@@ -20,16 +20,17 @@ import (
 func main() {
 	flag.Parse()
 
+	db := datalog.NewMemDB()
+
 	for _, arg := range flag.Args() {
-		fmt.Printf("%s\n", arg)
-		err := processFile(arg)
+		err := processFile(arg, db)
 		if err != nil {
-			fmt.Printf("%s: %s\n", arg, err)
+			fmt.Printf("%s\n", err)
 		}
 	}
 }
 
-func processFile(file string) error {
+func processFile(file string, db datalog.DB) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -46,11 +47,11 @@ func processFile(file string) error {
 		}
 		switch clauseType {
 		case datalog.ClauseFact:
-			datalog.DBAdd(clause)
+			db.Add(clause)
 
 		case datalog.ClauseQuery:
 			fmt.Printf("%s%s\n", clause, clauseType)
-			result := datalog.Query(clause.Head)
+			result := datalog.Query(clause.Head, db)
 			for _, r := range result {
 				fmt.Printf("=> %s\n", r)
 			}

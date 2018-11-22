@@ -15,8 +15,16 @@ import (
 	"net"
 	"time"
 
+	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/lgrep/handlers"
 	"github.com/markkurossi/lgrep/syslog"
 )
+
+type LogHandler func(e *syslog.Event, db datalog.DB)
+
+var logHandlers = map[string]LogHandler{
+	"sshd": handlers.SSHD,
+}
 
 func main() {
 	addr, err := net.ResolveUDPAddr("udp", ":1514")
@@ -29,6 +37,8 @@ func main() {
 	}
 	defer conn.Close()
 	log.Printf("Listening at %s\n", addr)
+
+	db := datalog.NewMemDB()
 
 	var buf [1024]byte
 	for {
@@ -43,12 +53,23 @@ func main() {
 				hex.Dump(buf[:n]))
 			continue
 		}
-		fmt.Printf("%s @ %s\n   Facility : %s\n   Severity : %s\n  Timestamp : %s\n   Hostname : %s\n    Message : %s\n",
-			src, time.Now(),
-			event.Facility,
-			event.Severity,
-			event.Timestamp,
-			event.Hostname,
-			event.Message)
+		fn, ok := logHandlers[event.Ident]
+		if ok {
+			fn(event, db)
+		} else {
+			if false {
+				fmt.Printf("%s @ %s\n   Facility : %s\n   Severity : %s\n  Timestamp : %s\n   Hostname : %s\n      Ident : %s\n        Pid : %d\n    Message : %s\n",
+					src, time.Now(),
+					event.Facility,
+					event.Severity,
+					event.Timestamp,
+					event.Hostname,
+					event.Ident,
+					event.Pid,
+					event.Message)
+			} else {
+				handlers.Default(event, db)
+			}
+		}
 	}
 }

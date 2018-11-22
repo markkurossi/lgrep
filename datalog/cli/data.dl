@@ -1,0 +1,24 @@
+"sshd-connection"(security, info, 1542884419, "authorizer", "sshd", 5484, "Connection from 10.0.2.2 port 57152 on 10.0.2.15 port 22", "10.0.2.2", "57152", "10.0.2.15", "22").
+"sshd-postponed-pubkey"(security, info, 1542884419, "authorizer", "sshd", 5484, "Postponed publickey for mtr from 10.0.2.2 port 57152 ssh2 [preauth]", "mtr", "10.0.2.2", "57152").
+"sshd-auth-pubkey"(security, info, 1542884419, "authorizer", "sshd", 5484, "Accepted publickey for mtr from 10.0.2.2 port 57152 ssh2: RSA SHA256:R9D+G/DQmxLICfKYEoGTzKmgc48XLOa3iD6Fa4ecneY", "mtr", "10.0.2.2", "57152", "RSA", "SHA256:R9D+G/DQmxLICfKYEoGTzKmgc48XLOa3iD6Fa4ecneY").
+"sshd-session-open"(security, info, 1542884419, "authorizer", "sshd", 5484, "pam_unix(sshd:session): session opened for user mtr by (uid=0)", "mtr", "0").
+"systemd"(system, info, 1542884419, "authorizer", "systemd", 1, "Started Session 87 of user mtr.").
+"systemd-logind"(security, info, 1542884419, "authorizer", "systemd-logind", 641, "New session 87 of user mtr.").
+"sshd-user-child-pid"(security, info, 1542884419, "authorizer", "sshd", 5484, "User child is on pid 5532", "5532").
+"sshd-session-start"(security, info, 1542884419, "authorizer", "sshd", 5532, "Starting session: shell on pts/8 for mtr from 10.0.2.2 port 57152 id 0", "shell on pts/8", "mtr", "10.0.2.2", "57152", "0").
+"sshd-disconnect"(security, info, 1542884420, "authorizer", "sshd", 5532, "Received disconnect from 10.0.2.2 port 57152:11: disconnected by user", "10.0.2.2", "57152", "11: disconnected by user").
+"sshd-disconnected"(security, info, 1542884420, "authorizer", "sshd", 5532, "Disconnected from 10.0.2.2 port 57152", "10.0.2.2", "57152").
+"sshd-session-close"(security, info, 1542884420, "authorizer", "sshd", 5484, "pam_unix(sshd:session): session closed for user mtr", "mtr").
+"systemd-logind"(security, info, 1542884420, "authorizer", "systemd-logind", 641, "Removed session 87.").
+"sshd-connection"(security, info, 1542884422, "authorizer", "sshd", 5548, "Connection from 10.0.2.2 port 57154 on 10.0.2.15 port 22", "10.0.2.2", "57154", "10.0.2.15", "22").
+"sshd-postponed-pubkey"(security, info, 1542884422, "authorizer", "sshd", 5548, "Postponed publickey for mtr from 10.0.2.2 port 57154 ssh2 [preauth]", "mtr", "10.0.2.2", "57154").
+"sshd-auth-pubkey"(security, info, 1542884422, "authorizer", "sshd", 5548, "Accepted publickey for mtr from 10.0.2.2 port 57154 ssh2: RSA SHA256:R9D+G/DQmxLICfKYEoGTzKmgc48XLOa3iD6Fa4ecneY", "mtr", "10.0.2.2", "57154", "RSA", "SHA256:R9D+G/DQmxLICfKYEoGTzKmgc48XLOa3iD6Fa4ecneY").
+"sshd-session-open"(security, info, 1542884422, "authorizer", "sshd", 5548, "pam_unix(sshd:session): session opened for user mtr by (uid=0)", "mtr", "0").
+"systemd"(system, info, 1542884422, "authorizer", "systemd", 1, "Started Session 88 of user mtr.").
+"systemd-logind"(security, info, 1542884422, "authorizer", "systemd-logind", 641, "New session 88 of user mtr.").
+"sshd-user-child-pid"(security, info, 1542884422, "authorizer", "sshd", 5548, "User child is on pid 5574", "5574").
+"sshd-session-start"(security, info, 1542884422, "authorizer", "sshd", 5574, "Starting session: subsystem 'sftp' for mtr from 10.0.2.2 port 57154 id 0", "subsystem 'sftp'", "mtr", "10.0.2.2", "57154", "0").
+"sshd-disconnect"(security, info, 1542884423, "authorizer", "sshd", 5574, "Received disconnect from 10.0.2.2 port 57154:11: disconnected by user", "10.0.2.2", "57154", "11: disconnected by user").
+"sshd-disconnected"(security, info, 1542884423, "authorizer", "sshd", 5574, "Disconnected from 10.0.2.2 port 57154", "10.0.2.2", "57154").
+"sshd-session-close"(security, info, 1542884423, "authorizer", "sshd", 5548, "pam_unix(sshd:session): session closed for user mtr", "mtr").
+"systemd-logind"(security, info, 1542884423, "authorizer", "systemd-logind", 641, "Removed session 88.").

@@ -52,9 +52,7 @@ func (p *Parser) Parse() (clause *Clause, clauseType ClauseType, err error) {
 	if err != nil {
 		return
 	}
-	clause = &Clause{
-		Head: atom,
-	}
+	clause = NewClause(atom, nil)
 
 	var token *Token
 	token, err = p.getToken()
@@ -113,8 +111,9 @@ func (p *Parser) parseAtom() (*Atom, error) {
 			token.Position, token)
 	}
 
+	symbol, _ := Intern(token.Value, token.Type == TokenString)
 	atom := &Atom{
-		Predicate: intern(token.Value, token.Type == TokenString),
+		Predicate: symbol,
 	}
 
 	next, err := p.peekToken()
@@ -135,10 +134,17 @@ func (p *Parser) parseAtom() (*Atom, error) {
 			var term Term
 			switch token.Type {
 			case TokenVariable:
-				term = NewTermVariable(intern(token.Value, false))
+				symbol, _ := Intern(token.Value, false)
+				term = NewTermVariable(symbol)
 
-			case TokenIdentifier, TokenString:
-				term = NewTermConstant(token.Value)
+			case TokenWildcard:
+				term = NewTermVariable(newUniqueSymbol())
+
+			case TokenIdentifier:
+				term = NewTermConstant(token.Value, false)
+
+			case TokenString:
+				term = NewTermConstant(token.Value, true)
 
 			default:
 				return nil, fmt.Errorf("%s: invalid predicate symbol: %s",
