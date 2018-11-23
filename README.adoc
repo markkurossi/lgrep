@@ -1,5 +1,27 @@
 = LGrep - Syslog Collector and Analyzer
 
+== Configure Remote System Logging with Rsyslog
+
+=== Ubuntu
+
+Edit the `/etc/rsyslog.d/10-rsyslog.conf` file:
+
+    *.* @10.0.2.2:1514
+
+Restart the rsyslog service:
+
+    $ service rsyslog restart
+
+==== CentOS
+
+Edit the `/etc/rsyslog.conf` file:
+
+    *.* @10.0.2.2:1514
+
+Restart the rsyslog service:
+
+    $ service rsyslog restart
+
 == License
 
 The file `datalog/slg.go` is derived from the
