@@ -6,11 +6,10 @@
 // All rights reserved.
 //
 
-package handlers
+package syslog
 
 import (
 	"github.com/markkurossi/lgrep/datalog"
-	"github.com/markkurossi/lgrep/syslog"
 )
 
-type Func func(e *syslog.Event, db datalog.DB, verbose bool)
+type Handler func(e *Event, db datalog.DB, verbose bool)

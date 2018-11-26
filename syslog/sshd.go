@@ -6,14 +6,13 @@
 // All rights reserved.
 //
 
-package handlers
+package syslog
 
 import (
 	"fmt"
 	"regexp"
 
 	"github.com/markkurossi/lgrep/datalog"
-	"github.com/markkurossi/lgrep/syslog"
 )
 
 type match struct {
@@ -136,7 +135,7 @@ var matches = []match{
 	},
 }
 
-func SSHD(e *syslog.Event, db datalog.DB, verbose bool) {
+func SSHD(e *Event, db datalog.DB, verbose bool) {
 	for _, matcher := range matches {
 		m := matcher.R.FindStringSubmatch(e.Message)
 		if m == nil {
@@ -148,7 +147,7 @@ func SSHD(e *syslog.Event, db datalog.DB, verbose bool) {
 	fmt.Printf("%% SSHD: %s\n", e.Message)
 }
 
-func event(db datalog.DB, predicate string, e *syslog.Event, extra []string,
+func event(db datalog.DB, predicate string, e *Event, extra []string,
 	verbose bool) {
 
 	terms := EventTerms(e)

@@ -6,16 +6,15 @@
 // All rights reserved.
 //
 
-package handlers
+package syslog
 
 import (
 	"fmt"
 
 	"github.com/markkurossi/lgrep/datalog"
-	"github.com/markkurossi/lgrep/syslog"
 )
 
-func Default(e *syslog.Event, db datalog.DB, verbose bool) {
+func Default(e *Event, db datalog.DB, verbose bool) {
 	var predicate string
 	if len(e.Ident) > 0 {
 		predicate = e.Ident

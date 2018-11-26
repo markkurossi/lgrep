@@ -1,21 +1,20 @@
 //
-// event.go
+// datalog.go
 //
 // Copyright (c) 2018 Markku Rossi
 //
 // All rights reserved.
 //
 
-package handlers
+package syslog
 
 import (
 	"fmt"
 
 	"github.com/markkurossi/lgrep/datalog"
-	"github.com/markkurossi/lgrep/syslog"
 )
 
-func EventTerms(e *syslog.Event) []datalog.Term {
+func EventTerms(e *Event) []datalog.Term {
 	var terms []datalog.Term
 
 	terms = append(terms, shared(fmt.Sprintf("%s", e.Facility), false))
