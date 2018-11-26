@@ -161,6 +161,25 @@ func (p *Parser) parseAtom() (*Atom, error) {
 					token.Position, token)
 			}
 		}
+		next, err := p.peekToken()
+		if err != nil {
+			return nil, err
+		}
+		if next == TokenIdentifier {
+			token, err = p.getToken()
+			if err != nil {
+				return nil, err
+			}
+			for _, r := range []rune(token.Value) {
+				switch r {
+				case 'p':
+					atom.Flags |= FlagPersistent
+
+				default:
+					return nil, fmt.Errorf("Invalid flag %c", r)
+				}
+			}
+		}
 	}
 
 	return atom, nil

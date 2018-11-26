@@ -25,7 +25,7 @@ func (c *Clause) Fact() bool {
 
 func NewClause(head *Atom, body []*Atom) *Clause {
 	return &Clause{
-		Timestamp: time.Now().Unix(),
+		Timestamp: time.Now().UnixNano(),
 		Head:      head,
 		Body:      body,
 	}
@@ -79,7 +79,7 @@ func (p Predicates) String() string {
 // clause. The predicates are returned in a map from the predicate
 // symbol to int64 so that the returned map can be used, for example,
 // to implement database search limiting.
-func (c *Clause) Predicates(db DB) Predicates {
+func (c *Clause) Predicates(db DB, flags Flags) Predicates {
 	result := make(Predicates)
 	pending := []*Clause{c}
 
@@ -89,6 +89,9 @@ func (c *Clause) Predicates(db DB) Predicates {
 			atoms := []*Atom{c.Head}
 			atoms = append(atoms, c.Body...)
 			for _, atom := range atoms {
+				if atom.Flags != flags {
+					continue
+				}
 				_, ok := result[atom.Predicate]
 				if !ok {
 					result[atom.Predicate] = 0

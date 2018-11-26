@@ -8,9 +8,16 @@
 
 package datalog
 
+type Flags int
+
+const (
+	FlagPersistent Flags = 1 << iota
+)
+
 type Atom struct {
 	Predicate Symbol
 	Terms     []Term
+	Flags     Flags
 }
 
 func NewAtom(predicate Symbol, terms []Term) *Atom {

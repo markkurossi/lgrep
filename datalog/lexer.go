@@ -228,6 +228,8 @@ func Stringify(val string) string {
 			result = append(result, []rune{'\\', 't'}...)
 		case '\v':
 			result = append(result, []rune{'\\', 'v'}...)
+		case '"':
+			result = append(result, []rune{'\\', '"'}...)
 		default:
 			result = append(result, r)
 		}
