@@ -24,7 +24,7 @@ type Server struct {
 	Verbose        bool
 	db             datalog.DB
 	queries        []*Query
-	syslogHandlers map[string]syslog.Handler
+	SyslogHandlers map[string]syslog.Handler
 }
 
 type Query struct {
@@ -35,7 +35,7 @@ type Query struct {
 func New(db datalog.DB) *Server {
 	return &Server{
 		db: db,
-		syslogHandlers: map[string]syslog.Handler{
+		SyslogHandlers: map[string]syslog.Handler{
 			"sshd": syslog.SSHD,
 		},
 	}
@@ -104,7 +104,7 @@ func (s *Server) ServeSyslogUDP(address string) error {
 				hex.Dump(buf[:n]))
 			continue
 		}
-		fn, ok := s.syslogHandlers[event.Ident]
+		fn, ok := s.SyslogHandlers[event.Ident]
 		if ok {
 			fn(event, s.db, s.Verbose)
 		} else {

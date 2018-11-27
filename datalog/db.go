@@ -35,7 +35,7 @@ func (db *MemDB) Add(clause *Clause) {
 func (db *MemDB) Get(predicate Symbol, limits Predicates) []*Clause {
 	var result []*Clause
 	for _, c := range db.clauses[predicate] {
-		if !c.Fact() || c.Timestamp > limits[predicate] {
+		if !c.IsFact() || c.Timestamp > limits[predicate] {
 			result = append(result, c)
 		}
 	}

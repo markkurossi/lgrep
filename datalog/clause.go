@@ -19,7 +19,7 @@ type Clause struct {
 	Body      []*Atom
 }
 
-func (c *Clause) Fact() bool {
+func (c *Clause) IsFact() bool {
 	return len(c.Body) == 0
 }
 
