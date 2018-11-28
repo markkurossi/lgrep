@@ -79,3 +79,32 @@ func (a *Atom) EqualsWithMapping(o *Atom, mapping map[Symbol]Symbol) bool {
 	}
 	return true
 }
+
+func (a *Atom) Unify(o *Atom, env Environment) *Atom {
+	if a.Predicate != o.Predicate {
+		return nil
+	}
+	if len(a.Terms) != len(o.Terms) {
+		return nil
+	}
+	var newTerms []Term
+
+	baseEnv := env.Clone()
+
+	for i, t := range a.Terms {
+		at := baseEnv.Map(t)
+		ot := baseEnv.Map(o.Terms[i])
+
+		unified := at.Unify(ot, env)
+		if unified == nil {
+			return nil
+		}
+		newTerms = append(newTerms, unified)
+	}
+
+	return &Atom{
+		Predicate: a.Predicate,
+		Terms:     newTerms,
+		// XXX flags
+	}
+}

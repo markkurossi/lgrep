@@ -47,7 +47,7 @@ import (
 //                           v        v        v
 //                         tc(a,c). tc(a,a). tc(a,b).
 
-func (a *Atom) RenameVariables(env Environment) Environment {
+func (a *Atom) RenameVariables(env EnvironmentSLG) EnvironmentSLG {
 	for _, term := range a.Terms {
 		term.Rename(env)
 	}
@@ -55,10 +55,10 @@ func (a *Atom) RenameVariables(env Environment) Environment {
 }
 
 func (a *Atom) Rename() *Atom {
-	return a.Substitute(a.RenameVariables(NewEnvironment()))
+	return a.Substitute(a.RenameVariables(NewEnvironmentSLG()))
 }
 
-func (a *Atom) Substitute(env Environment) *Atom {
+func (a *Atom) Substitute(env EnvironmentSLG) *Atom {
 	if len(env) == 0 {
 		return a
 	}
@@ -72,19 +72,19 @@ func (a *Atom) Substitute(env Environment) *Atom {
 	return n
 }
 
-func (a *Atom) Unify(o *Atom) Environment {
+func (a *Atom) UnifySLG(o *Atom) EnvironmentSLG {
 	if a.Predicate != o.Predicate {
 		return nil
 	}
 	if len(a.Terms) != len(o.Terms) {
 		return nil
 	}
-	env := NewEnvironment()
+	env := NewEnvironmentSLG()
 	for i, t := range a.Terms {
 		tn := t.Substitute(env)
 		on := o.Terms[i].Substitute(env)
 		if !tn.Equals(on) {
-			env = tn.Unify(on, env)
+			env = tn.UnifySLG(on, env)
 			if env == nil {
 				return nil
 			}
@@ -98,7 +98,7 @@ func (c *Clause) Resolve(a *Clause) *Clause {
 		return nil
 	}
 	renamed := a.Head.Rename()
-	env := c.Body[0].Unify(renamed)
+	env := c.Body[0].UnifySLG(renamed)
 	if env == nil {
 		return nil
 	}
@@ -117,13 +117,13 @@ func (c *Clause) Resolve(a *Clause) *Clause {
 	}
 }
 
-type Environment map[Symbol]Term
+type EnvironmentSLG map[Symbol]Term
 
-func NewEnvironment() Environment {
+func NewEnvironmentSLG() EnvironmentSLG {
 	return make(map[Symbol]Term)
 }
 
-func (e Environment) String() string {
+func (e EnvironmentSLG) String() string {
 	var str string
 	for k, v := range e {
 		if len(str) > 0 {
@@ -135,7 +135,7 @@ func (e Environment) String() string {
 }
 
 func (c *Clause) Rename() *Clause {
-	env := NewEnvironment()
+	env := NewEnvironmentSLG()
 	for _, atom := range c.Body {
 		env = atom.RenameVariables(env)
 	}
@@ -145,7 +145,7 @@ func (c *Clause) Rename() *Clause {
 	return c.Substitute(env)
 }
 
-func (c *Clause) Substitute(env Environment) *Clause {
+func (c *Clause) Substitute(env EnvironmentSLG) *Clause {
 	if len(env) == 0 {
 		return c
 	}
@@ -190,7 +190,7 @@ func (g *Goals) Search(sg *Subgoal) {
 	clauses := g.db.Get(sg.Atom.Predicate, g.limits)
 	for _, clause := range clauses {
 		renamed := clause.Rename()
-		env := sg.Atom.Unify(renamed.Head)
+		env := sg.Atom.UnifySLG(renamed.Head)
 		if env != nil {
 			substituted := renamed.Substitute(env)
 			g.NewClause(sg, substituted)
