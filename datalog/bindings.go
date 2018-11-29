@@ -1,5 +1,5 @@
 //
-// environment.go
+// bindings.go
 //
 // Copyright (c) 2018 Markku Rossi
 //
@@ -12,26 +12,26 @@ import (
 	"fmt"
 )
 
-type Environment map[Symbol]Term
+type Bindings map[Symbol]Term
 
-func NewEnvironment() Environment {
-	return make(Environment)
+func NewBindings() Bindings {
+	return make(Bindings)
 }
 
-func (env Environment) String() string {
+func (env Bindings) String() string {
 	var str string
 
 	for k, v := range env {
 		if len(str) > 0 {
 			str += ", "
 		}
-		str += fmt.Sprintf("%s=%s", k, v)
+		str += fmt.Sprintf("%s->%s", k, v)
 	}
-	return "[" + str + "]"
+	return "{" + str + "}"
 }
 
-func (e Environment) Clone() Environment {
-	n := NewEnvironment()
+func (e Bindings) Clone() Bindings {
+	n := NewBindings()
 	for k, v := range e {
 		n[k] = v
 	}
@@ -41,7 +41,7 @@ func (e Environment) Clone() Environment {
 // Map maps the argument term to its current binding in the
 // environment. The function returns the mapped value of the argument
 // term if the environment does not have a mapping for the term.
-func (e Environment) Map(term Term) Term {
+func (e Bindings) Map(term Term) Term {
 	mapped, ok := e[term.Variable()]
 	if ok {
 		return mapped
@@ -49,7 +49,12 @@ func (e Environment) Map(term Term) Term {
 	return term
 }
 
-func (e Environment) Bind(s Symbol, term Term) bool {
+func (e Bindings) Contains(s Symbol) bool {
+	_, ok := e[s]
+	return ok
+}
+
+func (e Bindings) Bind(s Symbol, term Term) bool {
 	_, ok := e[s]
 	if ok {
 		return false

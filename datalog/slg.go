@@ -49,16 +49,16 @@ import (
 
 func (a *Atom) RenameVariables(env EnvironmentSLG) EnvironmentSLG {
 	for _, term := range a.Terms {
-		term.Rename(env)
+		term.RenameSLG(env)
 	}
 	return env
 }
 
 func (a *Atom) Rename() *Atom {
-	return a.Substitute(a.RenameVariables(NewEnvironmentSLG()))
+	return a.SubstituteSLG(a.RenameVariables(NewEnvironmentSLG()))
 }
 
-func (a *Atom) Substitute(env EnvironmentSLG) *Atom {
+func (a *Atom) SubstituteSLG(env EnvironmentSLG) *Atom {
 	if len(env) == 0 {
 		return a
 	}
@@ -67,7 +67,7 @@ func (a *Atom) Substitute(env EnvironmentSLG) *Atom {
 		Terms:     make([]Term, 0, len(a.Terms)),
 	}
 	for _, t := range a.Terms {
-		n.Terms = append(n.Terms, t.Substitute(env))
+		n.Terms = append(n.Terms, t.SubstituteSLG(env))
 	}
 	return n
 }
@@ -81,8 +81,8 @@ func (a *Atom) UnifySLG(o *Atom) EnvironmentSLG {
 	}
 	env := NewEnvironmentSLG()
 	for i, t := range a.Terms {
-		tn := t.Substitute(env)
-		on := o.Terms[i].Substitute(env)
+		tn := t.SubstituteSLG(env)
+		on := o.Terms[i].SubstituteSLG(env)
 		if !tn.Equals(on) {
 			env = tn.UnifySLG(on, env)
 			if env == nil {
@@ -104,7 +104,7 @@ func (c *Clause) Resolve(a *Clause) *Clause {
 	}
 	newBody := make([]*Atom, len(c.Body)-1)
 	for idx, t := range c.Body[1:] {
-		newBody[idx] = t.Substitute(env)
+		newBody[idx] = t.SubstituteSLG(env)
 	}
 	var timestamp = a.Timestamp
 	if c.Timestamp > timestamp {
@@ -112,7 +112,7 @@ func (c *Clause) Resolve(a *Clause) *Clause {
 	}
 	return &Clause{
 		Timestamp: timestamp,
-		Head:      c.Head.Substitute(env),
+		Head:      c.Head.SubstituteSLG(env),
 		Body:      newBody,
 	}
 }
@@ -134,7 +134,7 @@ func (e EnvironmentSLG) String() string {
 	return "[" + str + "]"
 }
 
-func (c *Clause) Rename() *Clause {
+func (c *Clause) RenameSLG() *Clause {
 	env := NewEnvironmentSLG()
 	for _, atom := range c.Body {
 		env = atom.RenameVariables(env)
@@ -142,20 +142,20 @@ func (c *Clause) Rename() *Clause {
 	if len(env) == 0 {
 		return c
 	}
-	return c.Substitute(env)
+	return c.SubstituteSLG(env)
 }
 
-func (c *Clause) Substitute(env EnvironmentSLG) *Clause {
+func (c *Clause) SubstituteSLG(env EnvironmentSLG) *Clause {
 	if len(env) == 0 {
 		return c
 	}
 	n := &Clause{
 		Timestamp: c.Timestamp,
-		Head:      c.Head.Substitute(env),
+		Head:      c.Head.SubstituteSLG(env),
 		Body:      make([]*Atom, 0, len(c.Body)),
 	}
 	for _, a := range c.Body {
-		n.Body = append(n.Body, a.Substitute(env))
+		n.Body = append(n.Body, a.SubstituteSLG(env))
 	}
 	return n
 }
@@ -189,10 +189,10 @@ func (g *Goals) Lookup(a *Atom) *Subgoal {
 func (g *Goals) Search(sg *Subgoal) {
 	clauses := g.db.Get(sg.Atom.Predicate, g.limits)
 	for _, clause := range clauses {
-		renamed := clause.Rename()
+		renamed := clause.RenameSLG()
 		env := sg.Atom.UnifySLG(renamed.Head)
 		if env != nil {
-			substituted := renamed.Substitute(env)
+			substituted := renamed.SubstituteSLG(env)
 			g.NewClause(sg, substituted)
 		}
 	}

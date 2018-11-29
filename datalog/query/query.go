@@ -26,44 +26,81 @@ import (
 // - Extensional database predicates (EDB) – source tables
 // - Intensional database predicates (IDB) – derived tables
 //
-// Bottom-up Evaluation
-// - Start with the EDB relations
-// - Apply rules till convergence
-// – Construct the minimal Herbrand model
 
 // a(X, Y) vs. a(mtr, Y)
-func Execute(a *datalog.Atom, db datalog.DB, limits datalog.Predicates) []*datalog.Clause {
+func Execute(q *datalog.Atom, db datalog.DB, limits datalog.Predicates) []*datalog.Clause {
 	exe := &executor{
 		db:     db,
 		limits: limits,
 	}
-	exe.search(a)
-	return exe.results
+
+	env := datalog.NewBindings()
+	return exe.search(q, env)
 }
 
 type executor struct {
-	db      datalog.DB
-	limits  datalog.Predicates
-	results []*datalog.Clause
+	db     datalog.DB
+	limits datalog.Predicates
 }
 
-// XXX not sure about environment here.
-func (e *executor) search(a *datalog.Atom) {
-	for _, clause := range e.db.Get(a.Predicate, e.limits) {
+func (e *executor) search(q *datalog.Atom,
+	bindings datalog.Bindings) []*datalog.Clause {
+
+	var result []*datalog.Clause
+
+	for _, clause := range e.db.Get(q.Predicate, e.limits) {
+		env := bindings.Clone()
+
 		if clause.IsFact() {
-			unified := a.Unify(clause.Head, datalog.NewEnvironment())
+			unified := q.Unify(clause.Head, env)
 			if unified != nil {
-				e.AddResult(&datalog.Clause{
+				result = append(result, &datalog.Clause{
 					Head: unified,
 				})
 			}
 		} else {
 			// Iterate rules
-			fmt.Printf("Rules not implemented yet\n")
+			// XXX rename rule.
+			unified := q.Unify(clause.Head, env)
+			if unified == nil {
+				fmt.Printf("Can't unify clause head: Unify(%s, %s) %s\n",
+					q, clause.Head, env)
+				continue
+			}
+
+			clauses := e.rule(unified, clause.Body[0], clause.Body[1:], env)
+			result = append(result, clauses...)
 		}
 	}
+	return result
 }
 
-func (e *executor) AddResult(clause *datalog.Clause) {
-	e.results = append(e.results, clause)
+func (e *executor) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
+	bindings datalog.Bindings) []*datalog.Clause {
+
+	var result []*datalog.Clause
+
+	for _, clause := range e.search(atom, bindings) {
+		env := bindings.Clone()
+
+		unified := atom.Unify(clause.Head, env)
+
+		if len(rest) == 0 {
+			if unified != nil {
+				// Unified is part of the solution, but env contains
+				// the bindings for the rule head.
+				// Expand head with env and add to results.
+				fmt.Printf("Result: %s\n", head.Substitute(env))
+				result = append(result, &datalog.Clause{
+					Head: head.Substitute(env),
+				})
+			}
+		} else {
+			// Sideways information passing strategies (SIPS)
+			expanded := rest[0].Substitute(env)
+			clauses := e.rule(head, expanded, rest[1:], env)
+			result = append(result, clauses...)
+		}
+	}
+	return result
 }

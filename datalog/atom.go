@@ -80,7 +80,7 @@ func (a *Atom) EqualsWithMapping(o *Atom, mapping map[Symbol]Symbol) bool {
 	return true
 }
 
-func (a *Atom) Unify(o *Atom, env Environment) *Atom {
+func (a *Atom) Unify(o *Atom, env Bindings) *Atom {
 	if a.Predicate != o.Predicate {
 		return nil
 	}
@@ -107,4 +107,15 @@ func (a *Atom) Unify(o *Atom, env Environment) *Atom {
 		Terms:     newTerms,
 		// XXX flags
 	}
+}
+
+func (a *Atom) Substitute(env Bindings) *Atom {
+	n := &Atom{
+		Predicate: a.Predicate,
+		Terms:     make([]Term, len(a.Terms)),
+	}
+	for i, term := range a.Terms {
+		n.Terms[i] = env.Map(term)
+	}
+	return n
 }
