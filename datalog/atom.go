@@ -80,6 +80,12 @@ func (a *Atom) EqualsWithMapping(o *Atom, mapping map[Symbol]Symbol) bool {
 	return true
 }
 
+func (a *Atom) Rename(env Bindings) {
+	for _, term := range a.Terms {
+		term.Rename(env)
+	}
+}
+
 func (a *Atom) Unify(o *Atom, env Bindings) *Atom {
 	if a.Predicate != o.Predicate {
 		return nil

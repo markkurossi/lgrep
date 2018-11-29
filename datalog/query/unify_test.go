@@ -178,7 +178,7 @@ func TestUnify(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to parse clause '%s': %s\n", test.B, err)
 		}
-		env := datalog.NewEnvironment()
+		env := datalog.NewBindings()
 		unified := a.Head.Unify(b.Head, env)
 		if unified == nil {
 			if len(test.R) > 0 {
@@ -223,7 +223,7 @@ func BenchmarkUnify(bench *testing.B) {
 
 	bench.ResetTimer()
 	for i := 0; i < bench.N; i++ {
-		env := datalog.NewEnvironment()
+		env := datalog.NewBindings()
 		a.Head.Unify(b.Head, env)
 	}
 }

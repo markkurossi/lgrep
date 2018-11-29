@@ -60,15 +60,16 @@ func (e *executor) search(q *datalog.Atom,
 			}
 		} else {
 			// Iterate rules
-			// XXX rename rule.
-			unified := q.Unify(clause.Head, env)
+			renamed := clause.Rename()
+
+			unified := q.Unify(renamed.Head, env)
 			if unified == nil {
 				fmt.Printf("Can't unify clause head: Unify(%s, %s) %s\n",
-					q, clause.Head, env)
+					q, renamed.Head, env)
 				continue
 			}
 
-			clauses := e.rule(unified, clause.Body[0], clause.Body[1:], env)
+			clauses := e.rule(unified, renamed.Body[0], renamed.Body[1:], env)
 			result = append(result, clauses...)
 		}
 	}
@@ -87,10 +88,9 @@ func (e *executor) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
 
 		if len(rest) == 0 {
 			if unified != nil {
-				// Unified is part of the solution, but env contains
-				// the bindings for the rule head.
-				// Expand head with env and add to results.
-				fmt.Printf("Result: %s\n", head.Substitute(env))
+				// Unified is part of the solution, and env contains
+				// the bindings for the rule head.  Expand head with
+				// env and add to results.
 				result = append(result, &datalog.Clause{
 					Head: head.Substitute(env),
 				})

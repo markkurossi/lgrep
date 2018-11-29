@@ -47,15 +47,15 @@ import (
 //                           v        v        v
 //                         tc(a,c). tc(a,a). tc(a,b).
 
-func (a *Atom) RenameVariables(env EnvironmentSLG) EnvironmentSLG {
+func (a *Atom) RenameVariablesSLG(env EnvironmentSLG) EnvironmentSLG {
 	for _, term := range a.Terms {
 		term.RenameSLG(env)
 	}
 	return env
 }
 
-func (a *Atom) Rename() *Atom {
-	return a.SubstituteSLG(a.RenameVariables(NewEnvironmentSLG()))
+func (a *Atom) RenameSLG() *Atom {
+	return a.SubstituteSLG(a.RenameVariablesSLG(NewEnvironmentSLG()))
 }
 
 func (a *Atom) SubstituteSLG(env EnvironmentSLG) *Atom {
@@ -97,7 +97,7 @@ func (c *Clause) Resolve(a *Clause) *Clause {
 	if len(c.Body) == 0 {
 		return nil
 	}
-	renamed := a.Head.Rename()
+	renamed := a.Head.RenameSLG()
 	env := c.Body[0].UnifySLG(renamed)
 	if env == nil {
 		return nil
@@ -137,7 +137,7 @@ func (e EnvironmentSLG) String() string {
 func (c *Clause) RenameSLG() *Clause {
 	env := NewEnvironmentSLG()
 	for _, atom := range c.Body {
-		env = atom.RenameVariables(env)
+		env = atom.RenameVariablesSLG(env)
 	}
 	if len(env) == 0 {
 		return c

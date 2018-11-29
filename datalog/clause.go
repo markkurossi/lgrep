@@ -62,6 +62,25 @@ func (c *Clause) Equals(o *Clause) bool {
 	return true
 }
 
+// Rename returns a copy of clause where all variables are renamed
+// into new unique variables.
+func (c *Clause) Rename() *Clause {
+	env := NewBindings()
+	c.Head.Rename(env)
+	for _, atom := range c.Body {
+		atom.Rename(env)
+	}
+	clause := &Clause{
+		Timestamp: c.Timestamp,
+		Head:      c.Head.Substitute(env),
+		Body:      make([]*Atom, len(c.Body)),
+	}
+	for i, atom := range c.Body {
+		clause.Body[i] = atom.Substitute(env)
+	}
+	return clause
+}
+
 type Predicates map[Symbol]int64
 
 func (p Predicates) String() string {
