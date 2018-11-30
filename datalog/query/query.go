@@ -104,3 +104,145 @@ func (exe *executor) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
 	}
 	return result
 }
+
+/*********************************** New ************************************/
+
+func ExecuteNew(q *datalog.Atom, db datalog.DB, limits datalog.Predicates) []*datalog.Clause {
+	query := &Query{
+		atom:     q,
+		db:       db,
+		limits:   limits,
+		bindings: datalog.NewBindings(),
+		table:    &Table{},
+	}
+	return query.Search()
+}
+
+type Query struct {
+	atom     *datalog.Atom
+	db       datalog.DB
+	limits   datalog.Predicates
+	bindings datalog.Bindings
+	table    *Table
+	result   []*datalog.Clause
+}
+
+func (q *Query) Equals(o *Query) bool {
+	return q.atom.Equals(o.atom)
+}
+
+func (q *Query) Search() []*datalog.Clause {
+	found, entry := q.table.Add(q)
+	if found {
+		return entry.q.result
+	}
+
+	for _, clause := range q.db.Get(q.atom.Predicate, q.limits) {
+		env := q.bindings.Clone()
+
+		if clause.IsFact() {
+			unified := q.atom.Unify(clause.Head, env)
+			if unified != nil {
+				r := &datalog.Clause{
+					Head: unified,
+				}
+				q.addResult(r)
+			}
+		} else {
+			// Iterate rules
+			renamed := clause.Rename()
+
+			unified := q.atom.Unify(renamed.Head, env)
+			if unified == nil {
+				fmt.Printf("Can't unify clause head: Unify(%s, %s) %s\n",
+					q.atom, renamed.Head, env)
+				continue
+			}
+
+			renamed.Substitute(env)
+
+			clauses := q.rule(unified, renamed.Body[0], renamed.Body[1:],
+				datalog.NewBindings())
+			for _, clause := range clauses {
+				q.addResult(clause)
+			}
+		}
+	}
+
+	// Notify waiters.
+	for _, waiter := range entry.waiters {
+		waiter.Search()
+	}
+
+	return q.result
+}
+
+func (q *Query) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
+	bindings datalog.Bindings) []*datalog.Clause {
+
+	var result []*datalog.Clause
+
+	subQuery := &Query{
+		atom:     atom,
+		db:       q.db,
+		limits:   q.limits,
+		bindings: bindings.Clone(), // XXX do we need to clone here?
+		table:    q.table,
+	}
+
+	for _, clause := range subQuery.Search() {
+		env := bindings.Clone()
+
+		unified := atom.Unify(clause.Head, env)
+
+		if len(rest) == 0 {
+			if unified != nil {
+				// Unified is part of the solution, and env contains
+				// the bindings for the rule head.  Expand head with
+				// env and add to results.
+				r := &datalog.Clause{
+					Head: head.Substitute(env),
+				}
+				result = append(result, r)
+			}
+		} else {
+			// Sideways information passing strategies (SIPS)
+			expanded := rest[0].Substitute(env)
+			clauses := q.rule(head, expanded, rest[1:], env)
+			result = append(result, clauses...)
+		}
+	}
+	return result
+}
+
+func (q *Query) addResult(result *datalog.Clause) {
+	for _, r := range q.result {
+		if r.Equals(result) {
+			return
+		}
+	}
+	q.result = append(q.result, result)
+}
+
+type Table struct {
+	entries []*TableEntry
+}
+
+func (table *Table) Add(q *Query) (bool, *TableEntry) {
+	for _, entry := range table.entries {
+		if entry.q.Equals(q) {
+			entry.waiters = append(entry.waiters, q)
+			return true, entry
+		}
+	}
+	entry := &TableEntry{
+		q: q,
+	}
+	table.entries = append(table.entries, entry)
+	return false, entry
+}
+
+type TableEntry struct {
+	q       *Query
+	waiters []*Query
+}

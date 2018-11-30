@@ -56,7 +56,7 @@ func processFile(file string, db datalog.DB) error {
 			if false {
 				result = datalog.Query(clause.Head, db, nil)
 			} else {
-				result = query.Execute(clause.Head, db, nil)
+				result = query.ExecuteNew(clause.Head, db, nil)
 			}
 			for _, r := range result {
 				fmt.Printf("=> %s\n", r)

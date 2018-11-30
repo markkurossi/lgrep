@@ -81,6 +81,13 @@ func (c *Clause) Rename() *Clause {
 	return clause
 }
 
+func (c *Clause) Substitute(bindings Bindings) {
+	c.Head = c.Head.Substitute(bindings)
+	for i, atom := range c.Body {
+		c.Body[i] = atom.Substitute(bindings)
+	}
+}
+
 type Predicates map[Symbol]int64
 
 func (p Predicates) String() string {

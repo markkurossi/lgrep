@@ -1003,6 +1003,6 @@ edge(997, 998).
 edge(998, 999).
 edge(999, 1000).
 edge(1000, 0).
-%same_clique(0,1000)?
-edge(10, Y)?
-edge(X, 10)?
+same_clique(0,1000)?
+%edge(10, Y)?
+%edge(X, 10)?
