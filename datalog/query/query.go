@@ -43,12 +43,12 @@ type executor struct {
 	limits datalog.Predicates
 }
 
-func (e *executor) search(q *datalog.Atom,
+func (exe *executor) search(q *datalog.Atom,
 	bindings datalog.Bindings) []*datalog.Clause {
 
 	var result []*datalog.Clause
 
-	for _, clause := range e.db.Get(q.Predicate, e.limits) {
+	for _, clause := range exe.db.Get(q.Predicate, exe.limits) {
 		env := bindings.Clone()
 
 		if clause.IsFact() {
@@ -69,19 +69,19 @@ func (e *executor) search(q *datalog.Atom,
 				continue
 			}
 
-			clauses := e.rule(unified, renamed.Body[0], renamed.Body[1:], env)
+			clauses := exe.rule(unified, renamed.Body[0], renamed.Body[1:], env)
 			result = append(result, clauses...)
 		}
 	}
 	return result
 }
 
-func (e *executor) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
+func (exe *executor) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
 	bindings datalog.Bindings) []*datalog.Clause {
 
 	var result []*datalog.Clause
 
-	for _, clause := range e.search(atom, bindings) {
+	for _, clause := range exe.search(atom, bindings) {
 		env := bindings.Clone()
 
 		unified := atom.Unify(clause.Head, env)
@@ -98,7 +98,7 @@ func (e *executor) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
 		} else {
 			// Sideways information passing strategies (SIPS)
 			expanded := rest[0].Substitute(env)
-			clauses := e.rule(head, expanded, rest[1:], env)
+			clauses := exe.rule(head, expanded, rest[1:], env)
 			result = append(result, clauses...)
 		}
 	}
