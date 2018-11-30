@@ -70,13 +70,17 @@ func (c *Clause) Rename() *Clause {
 	for _, atom := range c.Body {
 		atom.Rename(env)
 	}
+	if env.Size() == 0 {
+		return c
+	}
+
 	clause := &Clause{
 		Timestamp: c.Timestamp,
-		Head:      c.Head.Substitute(env),
+		Head:      c.Head.Clone().Substitute(env),
 		Body:      make([]*Atom, len(c.Body)),
 	}
 	for i, atom := range c.Body {
-		clause.Body[i] = atom.Substitute(env)
+		clause.Body[i] = atom.Clone().Substitute(env)
 	}
 	return clause
 }

@@ -18,6 +18,10 @@ func NewBindings() Bindings {
 	return make(Bindings)
 }
 
+func (env Bindings) Size() int {
+	return len(env)
+}
+
 func (env Bindings) String() string {
 	var str string
 

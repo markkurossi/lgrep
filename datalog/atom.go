@@ -115,13 +115,22 @@ func (a *Atom) Unify(o *Atom, env Bindings) *Atom {
 	}
 }
 
-func (a *Atom) Substitute(env Bindings) *Atom {
+func (a *Atom) Clone() *Atom {
 	n := &Atom{
 		Predicate: a.Predicate,
 		Terms:     make([]Term, len(a.Terms)),
 	}
 	for i, term := range a.Terms {
-		n.Terms[i] = env.Map(term)
+		n.Terms[i] = term
 	}
 	return n
+}
+
+// Substitute applies the bindings to the atom in-place and returns
+// the modified atom.
+func (a *Atom) Substitute(env Bindings) *Atom {
+	for i, term := range a.Terms {
+		a.Terms[i] = env.Map(term)
+	}
+	return a
 }

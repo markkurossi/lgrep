@@ -154,8 +154,6 @@ func (q *Query) Search() []*datalog.Clause {
 
 			unified := q.atom.Unify(renamed.Head, env)
 			if unified == nil {
-				fmt.Printf("Can't unify clause head: Unify(%s, %s) %s\n",
-					q.atom, renamed.Head, env)
 				continue
 			}
 
@@ -186,7 +184,7 @@ func (q *Query) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
 		atom:     atom,
 		db:       q.db,
 		limits:   q.limits,
-		bindings: bindings.Clone(), // XXX do we need to clone here?
+		bindings: bindings,
 		table:    q.table,
 	}
 
