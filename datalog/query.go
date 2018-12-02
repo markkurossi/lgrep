@@ -6,13 +6,13 @@
 // All rights reserved.
 //
 
-package query
+package datalog
 
 import (
 	"fmt"
-
-	"github.com/markkurossi/lgrep/datalog"
 )
+
+const debug bool = false
 
 // A `program' is a finite set of clauses of the form:
 //
@@ -27,30 +27,33 @@ import (
 // - Intensional database predicates (IDB) – derived tables
 //
 
-func ExecuteNew(q *datalog.Atom, db datalog.DB, limits datalog.Predicates) []*datalog.Clause {
+func Execute(q *Atom, db DB, limits Predicates) []*Clause {
 	query := &Query{
 		atom:     q,
 		db:       db,
 		limits:   limits,
-		bindings: datalog.NewBindings(),
+		bindings: NewBindings(),
 		table:    &Table{},
 	}
-	query.Search(func(result []*datalog.Clause) {})
+	query.Search(func(result []*Clause) {})
 	return query.result
 }
 
 type Query struct {
-	atom     *datalog.Atom
-	db       datalog.DB
-	limits   datalog.Predicates
-	bindings datalog.Bindings
+	atom     *Atom
+	db       DB
+	limits   Predicates
+	bindings Bindings
 	table    *Table
-	result   []*datalog.Clause
+	result   []*Clause
 	parent   *Query
 	level    int
 }
 
 func (q *Query) Printf(format string, a ...interface{}) {
+	if !debug {
+		return
+	}
 	for i := 0; i < q.level*4; i++ {
 		fmt.Print(" ")
 	}
@@ -61,7 +64,7 @@ func (q *Query) Equals(o *Query) bool {
 	return q.atom.Equals(o.atom)
 }
 
-func (q *Query) Search(cont func(result []*datalog.Clause)) {
+func (q *Query) Search(cont func(result []*Clause)) {
 	found, entry := q.table.Add(q, cont)
 	if found {
 		cont(entry.q.result)
@@ -74,7 +77,7 @@ func (q *Query) Search(cont func(result []*datalog.Clause)) {
 		if clause.IsFact() {
 			unified := q.atom.Unify(clause.Head, env)
 			if unified != nil {
-				r := &datalog.Clause{
+				r := &Clause{
 					Head: unified,
 				}
 				q.Printf("Search.fact: %s\n", unified)
@@ -94,7 +97,7 @@ func (q *Query) Search(cont func(result []*datalog.Clause)) {
 			renamed.Substitute(env)
 
 			q.rule(unified, renamed.Body[0], renamed.Body[1:],
-				datalog.NewBindings())
+				NewBindings())
 		}
 	}
 
@@ -113,8 +116,8 @@ func (q *Query) Search(cont func(result []*datalog.Clause)) {
 	}
 }
 
-func (q *Query) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
-	bindings datalog.Bindings) {
+func (q *Query) rule(head, atom *Atom, rest []*Atom,
+	bindings Bindings) {
 
 	subQuery := &Query{
 		atom:     atom,
@@ -126,7 +129,7 @@ func (q *Query) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
 		level:    q.level + 1,
 	}
 
-	subQuery.Search(func(clauses []*datalog.Clause) {
+	subQuery.Search(func(clauses []*Clause) {
 		q.Printf("%s->%s\n", atom, clauses)
 		for _, clause := range clauses {
 			env := bindings.Clone()
@@ -139,7 +142,7 @@ func (q *Query) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
 					// Unified is part of the solution, and env contains
 					// the bindings for the rule head.  Expand head with
 					// env and add to results.
-					r := &datalog.Clause{
+					r := &Clause{
 						Head: head.Clone().Substitute(env),
 					}
 					q.addResult(r)
@@ -154,7 +157,7 @@ func (q *Query) rule(head, atom *datalog.Atom, rest []*datalog.Atom,
 	})
 }
 
-func (q *Query) addResult(result *datalog.Clause) {
+func (q *Query) addResult(result *Clause) {
 	q.Printf("%s: result %s\n", q.atom, result)
 	for _, r := range q.result {
 		if r.Equals(result) {
@@ -169,7 +172,7 @@ type Table struct {
 	entries []*TableEntry
 }
 
-func (table *Table) Add(q *Query, cont func([]*datalog.Clause)) (bool, *TableEntry) {
+func (table *Table) Add(q *Query, cont func([]*Clause)) (bool, *TableEntry) {
 	for _, entry := range table.entries {
 		if entry.q.Equals(q) {
 			entry.waiters = append(entry.waiters, cont)
@@ -185,5 +188,5 @@ func (table *Table) Add(q *Query, cont func([]*datalog.Clause)) (bool, *TableEnt
 
 type TableEntry struct {
 	q       *Query
-	waiters []func([]*datalog.Clause)
+	waiters []func([]*Clause)
 }

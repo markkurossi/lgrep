@@ -66,9 +66,15 @@ func TestSLG(t *testing.T) {
 			db.Add(clause)
 
 		case ClauseQuery:
-			fmt.Printf("%s%s\n", clause, clauseType)
-			result := Query(clause.Head, db, nil)
+			fmt.Printf("SLG: %s%s\n", clause, clauseType)
+			result := QuerySLG(clause.Head, db, nil)
 			for _, r := range result {
+				fmt.Printf("=> %s\n", r)
+			}
+
+			fmt.Printf("New: %s%s\n", clause, clauseType)
+			result2 := Execute(clause.Head, db, nil)
+			for _, r := range result2 {
 				fmt.Printf("=> %s\n", r)
 			}
 		}
@@ -101,7 +107,7 @@ func BenchmarkEval(b *testing.B) {
 				db.Add(clause)
 
 			case ClauseQuery:
-				result := Query(clause.Head, db, nil)
+				result := QuerySLG(clause.Head, db, nil)
 				for _, r := range result {
 					fmt.Printf("=> %s\n", r)
 				}

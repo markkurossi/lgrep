@@ -15,7 +15,6 @@ import (
 	"os"
 
 	"github.com/markkurossi/lgrep/datalog"
-	"github.com/markkurossi/lgrep/datalog/query"
 )
 
 func main() {
@@ -54,9 +53,9 @@ func processFile(file string, db datalog.DB) error {
 			fmt.Printf("%s%s\n", clause, clauseType)
 			var result []*datalog.Clause
 			if false {
-				result = datalog.Query(clause.Head, db, nil)
+				result = datalog.QuerySLG(clause.Head, db, nil)
 			} else {
-				result = query.ExecuteNew(clause.Head, db, nil)
+				result = datalog.Execute(clause.Head, db, nil)
 			}
 			for _, r := range result {
 				fmt.Printf("=> %s\n", r)

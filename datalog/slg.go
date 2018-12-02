@@ -266,7 +266,7 @@ type Waiter struct {
 	Goal *Subgoal
 }
 
-func Query(a *Atom, db DB, limits Predicates) []*Clause {
+func QuerySLG(a *Atom, db DB, limits Predicates) []*Clause {
 	goals := &Goals{
 		db:     db,
 		limits: limits,
