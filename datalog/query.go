@@ -51,9 +51,6 @@ type Query struct {
 }
 
 func (q *Query) Printf(format string, a ...interface{}) {
-	if !debug {
-		return
-	}
 	for i := 0; i < q.level*4; i++ {
 		fmt.Print(" ")
 	}
@@ -80,10 +77,10 @@ func (q *Query) Search(cont func(result []*Clause)) {
 				r := &Clause{
 					Head: unified,
 				}
-				q.Printf("Search.fact: %s\n", unified)
+				if debug {
+					q.Printf("Search.fact: %s\n", unified)
+				}
 				q.addResult(r)
-			} else {
-				q.Printf("Unify %s %s %s failed\n", q.atom, clause.Head, env)
 			}
 		} else {
 			// Iterate rules
@@ -104,21 +101,21 @@ func (q *Query) Search(cont func(result []*Clause)) {
 	cont(q.result)
 
 	// Notify waiters.
-	for {
-		was := len(q.result)
+	start := 0
+	end := len(q.result)
+	for start < end {
 		for _, waiter := range entry.waiters {
-			q.Printf("->%s %v\n", entry.q.atom, q.result)
-			waiter(q.result)
+			if debug {
+				q.Printf("->%s %v\n", entry.q.atom, q.result[start:end])
+			}
+			waiter(q.result[start:end])
 		}
-		if len(q.result) == was {
-			break
-		}
+		start = end
+		end = len(q.result)
 	}
 }
 
-func (q *Query) rule(head, atom *Atom, rest []*Atom,
-	bindings Bindings) {
-
+func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings Bindings) {
 	subQuery := &Query{
 		atom:     atom,
 		db:       q.db,
@@ -130,14 +127,18 @@ func (q *Query) rule(head, atom *Atom, rest []*Atom,
 	}
 
 	subQuery.Search(func(clauses []*Clause) {
-		q.Printf("%s->%s\n", atom, clauses)
+		if debug {
+			q.Printf("%s->%s\n", atom, clauses)
+		}
 		for _, clause := range clauses {
 			env := bindings.Clone()
 
 			unified := atom.Unify(clause.Head, env)
 
 			if len(rest) == 0 {
-				q.Printf("rule.fact: %s, env=%s\n", unified, env)
+				if debug {
+					q.Printf("rule.fact: %s, env=%s\n", unified, env)
+				}
 				if unified != nil {
 					// Unified is part of the solution, and env contains
 					// the bindings for the rule head.  Expand head with
@@ -149,7 +150,9 @@ func (q *Query) rule(head, atom *Atom, rest []*Atom,
 				}
 			} else {
 				// Sideways information passing strategies (SIPS)
-				q.Printf("sips: %s\n", unified)
+				if debug {
+					q.Printf("sips: %s\n", unified)
+				}
 				expanded := rest[0].Clone().Substitute(env)
 				q.rule(head, expanded, rest[1:], env)
 			}
@@ -158,10 +161,11 @@ func (q *Query) rule(head, atom *Atom, rest []*Atom,
 }
 
 func (q *Query) addResult(result *Clause) {
-	q.Printf("%s: result %s\n", q.atom, result)
+	if debug {
+		q.Printf("%s: result %s\n", q.atom, result)
+	}
 	for _, r := range q.result {
 		if r.Equals(result) {
-			q.Printf("addResult: %s.Equals(%s)\n", r, result)
 			return
 		}
 	}

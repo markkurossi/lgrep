@@ -34,3 +34,9 @@ falls under the GNU GPLv3 license.
 == TODO
 
 https://docs.microsoft.com/en-us/windows/desktop/wec/setting-up-a-source-initiated-subscription
+
+== Datalog
+
+                	Mitre	Gotalog	LGrep
+	clique1000      3.272	0.517	0.955
+        induction1000	2.874	0.390	0.817
