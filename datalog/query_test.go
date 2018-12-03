@@ -9,7 +9,6 @@
 package datalog
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -144,7 +143,7 @@ func TestData(t *testing.T) {
 				db.Add(clause)
 
 			case ClauseQuery:
-				var result []*Clause
+				var result ResultSet
 				if false {
 					result = QuerySLG(clause.Head, db, nil)
 				} else {
@@ -155,13 +154,8 @@ func TestData(t *testing.T) {
 					t.Errorf("Unexpected number of results: %d vs. %d\n",
 						len(result), len(expected))
 				}
-				for _, r := range result {
-					if false {
-						fmt.Printf("=> %s.\n", r)
-					}
-					if !expected.Contains(r) {
-						t.Errorf("Unexpected result %s\n", r)
-					}
+				if !result.Equals(expected) {
+					t.Errorf("Unexpected result %s vs. %s\n", result, expected)
 				}
 			}
 		}
@@ -197,4 +191,18 @@ func (rs ResultSet) Contains(clause *Clause) bool {
 		}
 	}
 	return false
+}
+
+func (rs ResultSet) Equals(o ResultSet) bool {
+	for _, c := range rs {
+		if !o.Contains(c) {
+			return false
+		}
+	}
+	for _, c := range o {
+		if !rs.Contains(c) {
+			return false
+		}
+	}
+	return true
 }
