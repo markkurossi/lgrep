@@ -43,14 +43,14 @@ type Query struct {
 	atom           *Atom
 	db             DB
 	limits         Predicates
-	bindings       Bindings
+	bindings       *Bindings
 	table          *Table
 	result         []*Clause
 	parent         *Query
 	level          int
 	parentHead     *Atom
 	parentRest     []*Atom
-	parentBindings Bindings
+	parentBindings *Bindings
 }
 
 func (q *Query) Printf(format string, a ...interface{}) {
@@ -124,7 +124,7 @@ func (q *Query) searchResult(result []*Clause) {
 	}
 }
 
-func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings Bindings) {
+func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings *Bindings) {
 	subQuery := &Query{
 		atom:           atom,
 		db:             q.db,
@@ -141,7 +141,7 @@ func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings Bindings) {
 }
 
 func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
-	bindings Bindings, clauses []*Clause) {
+	bindings *Bindings, clauses []*Clause) {
 	if debug {
 		q.Printf("%s->%s\n", atom, clauses)
 	}

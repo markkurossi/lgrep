@@ -38,5 +38,5 @@ https://docs.microsoft.com/en-us/windows/desktop/wec/setting-up-a-source-initiat
 == Datalog
 
                 	Mitre	Gotalog	LGrep
-	clique1000      3.272	0.517	0.955
-        induction1000	2.874	0.390	0.817
+	clique1000      3.272	0.517	0.898
+        induction1000	2.874	0.390	0.709

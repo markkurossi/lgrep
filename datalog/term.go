@@ -18,8 +18,8 @@ const (
 type Term interface {
 	Type() TermType
 	Variable() Symbol
-	Rename(env Bindings)
-	Unify(t Term, env Bindings) Term
+	Rename(env *Bindings)
+	Unify(t Term, env *Bindings) Term
 	Equals(t Term) bool
 	String() string
 	RenameSLG(env EnvironmentSLG)
@@ -49,7 +49,7 @@ func (t *TermVariable) RenameSLG(env EnvironmentSLG) {
 	env[t.Symbol] = NewTermVariable(newUniqueSymbol())
 }
 
-func (t *TermVariable) Rename(env Bindings) {
+func (t *TermVariable) Rename(env *Bindings) {
 	if !env.Contains(t.Symbol) {
 		env.Bind(t.Symbol, NewTermVariable(newUniqueSymbol()))
 	}
@@ -74,7 +74,7 @@ func (t *TermVariable) UnifySLG(other Term, env EnvironmentSLG) EnvironmentSLG {
 	return env
 }
 
-func (t *TermVariable) Unify(other Term, env Bindings) Term {
+func (t *TermVariable) Unify(other Term, env *Bindings) Term {
 	switch o := other.(type) {
 	case *TermVariable:
 		if t.Symbol == o.Symbol {
@@ -144,7 +144,7 @@ func (t *TermConstant) Variable() Symbol {
 func (t *TermConstant) RenameSLG(env EnvironmentSLG) {
 }
 
-func (t *TermConstant) Rename(env Bindings) {
+func (t *TermConstant) Rename(env *Bindings) {
 }
 
 func (t *TermConstant) SubstituteSLG(env EnvironmentSLG) Term {
@@ -166,7 +166,7 @@ func (t *TermConstant) UnifySLG(other Term, env EnvironmentSLG) EnvironmentSLG {
 	return nil
 }
 
-func (t *TermConstant) Unify(other Term, env Bindings) Term {
+func (t *TermConstant) Unify(other Term, env *Bindings) Term {
 	switch o := other.(type) {
 	case *TermVariable:
 		// Unify(t, O): assign O to t

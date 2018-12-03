@@ -12,32 +12,39 @@ import (
 	"fmt"
 )
 
-type Bindings map[Symbol]Term
-
-func NewBindings() Bindings {
-	return make(Bindings)
+type Bindings struct {
+	arr []binding
 }
 
-func (env Bindings) Size() int {
-	return len(env)
+type binding struct {
+	sym Symbol
+	val Term
 }
 
-func (env Bindings) String() string {
+func NewBindings() *Bindings {
+	return &Bindings{}
+}
+
+func (env *Bindings) Size() int {
+	return len(env.arr)
+}
+
+func (env *Bindings) String() string {
 	var str string
 
-	for k, v := range env {
+	for _, b := range env.arr {
 		if len(str) > 0 {
 			str += ", "
 		}
-		str += fmt.Sprintf("%s->%s", k, v)
+		str += fmt.Sprintf("%s->%s", b.sym, b.val)
 	}
 	return "{" + str + "}"
 }
 
-func (e Bindings) Clone() Bindings {
+func (env *Bindings) Clone() *Bindings {
 	n := NewBindings()
-	for k, v := range e {
-		n[k] = v
+	for _, b := range env.arr {
+		n.arr = append(n.arr, b)
 	}
 	return n
 }
@@ -45,24 +52,34 @@ func (e Bindings) Clone() Bindings {
 // Map maps the argument term to its current binding in the
 // environment. The function returns the mapped value of the argument
 // term if the environment does not have a mapping for the term.
-func (e Bindings) Map(term Term) Term {
-	mapped, ok := e[term.Variable()]
-	if ok {
-		return mapped
+func (env *Bindings) Map(term Term) Term {
+	sym := term.Variable()
+	if sym != NilSymbol {
+		for _, b := range env.arr {
+			if b.sym == sym {
+				return b.val
+			}
+		}
 	}
 	return term
 }
 
-func (e Bindings) Contains(s Symbol) bool {
-	_, ok := e[s]
-	return ok
+func (env *Bindings) Contains(s Symbol) bool {
+	for _, b := range env.arr {
+		if b.sym == s {
+			return true
+		}
+	}
+	return false
 }
 
-func (e Bindings) Bind(s Symbol, term Term) bool {
-	_, ok := e[s]
-	if ok {
+func (env *Bindings) Bind(s Symbol, term Term) bool {
+	if env.Contains(s) {
 		return false
 	}
-	e[s] = term
+	env.arr = append(env.arr, binding{
+		sym: s,
+		val: term,
+	})
 	return true
 }

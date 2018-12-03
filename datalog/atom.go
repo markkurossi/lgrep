@@ -80,13 +80,13 @@ func (a *Atom) EqualsWithMapping(o *Atom, mapping map[Symbol]Symbol) bool {
 	return true
 }
 
-func (a *Atom) Rename(env Bindings) {
+func (a *Atom) Rename(env *Bindings) {
 	for _, term := range a.Terms {
 		term.Rename(env)
 	}
 }
 
-func (a *Atom) Unify(o *Atom, env Bindings) *Atom {
+func (a *Atom) Unify(o *Atom, env *Bindings) *Atom {
 	if a.Predicate != o.Predicate {
 		return nil
 	}
@@ -128,7 +128,7 @@ func (a *Atom) Clone() *Atom {
 
 // Substitute applies the bindings to the atom in-place and returns
 // the modified atom.
-func (a *Atom) Substitute(env Bindings) *Atom {
+func (a *Atom) Substitute(env *Bindings) *Atom {
 	for i, term := range a.Terms {
 		a.Terms[i] = env.Map(term)
 	}
