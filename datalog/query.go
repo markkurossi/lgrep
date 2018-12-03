@@ -66,6 +66,9 @@ func (q *Query) Equals(o *Query) bool {
 }
 
 func (q *Query) Search() {
+	if debug {
+		q.Printf("Search %s\n", q.atom)
+	}
 	found, entry := q.table.Add(q)
 	if found {
 		q.searchResult(entry.q.result)
@@ -81,7 +84,7 @@ func (q *Query) Search() {
 					Head: q.atom.Clone().Substitute(env),
 				}
 				if debug {
-					q.Printf("Search.fact: %s\n", r.Head)
+					q.Printf("Fact: %s\n", r.Head)
 				}
 				q.addResult(r)
 			}
@@ -123,6 +126,9 @@ func (q *Query) searchResult(result []*Clause) {
 }
 
 func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings *Bindings) {
+	if debug {
+		q.Printf("<Rule %s :- %s,%v\n", head, atom, rest)
+	}
 	subQuery := &Query{
 		atom:           atom,
 		db:             q.db,
@@ -141,7 +147,7 @@ func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings *Bindings) {
 func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
 	bindings *Bindings, clauses []*Clause) {
 	if debug {
-		q.Printf("%s->%s\n", atom, clauses)
+		q.Printf(">Rule %s :- %s,%v <= %v\n", head, atom, rest, clauses)
 	}
 	for _, clause := range clauses {
 		env := bindings.Clone()
@@ -158,7 +164,7 @@ func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
 				Head: head.Clone().Substitute(env),
 			}
 			if debug {
-				q.Printf("rule.fact: %s, env=%s\n", r.Head, env)
+				q.Printf("Fact: %s, env=%s\n", r.Head, env)
 			}
 			q.addResult(r)
 		} else {
@@ -174,7 +180,7 @@ func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
 
 func (q *Query) addResult(result *Clause) {
 	if debug {
-		q.Printf("%s: result %s\n", q.atom, result)
+		q.Printf("=> %s\n", result)
 	}
 	for _, r := range q.result {
 		if r.Equals(result) {
