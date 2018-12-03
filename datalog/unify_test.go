@@ -6,14 +6,12 @@
 // All rights reserved.
 //
 
-package query
+package datalog
 
 import (
 	"fmt"
 	"strings"
 	"testing"
-
-	"github.com/markkurossi/lgrep/datalog"
 )
 
 type UnifyTest struct {
@@ -178,7 +176,7 @@ func TestUnify(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to parse clause '%s': %s\n", test.B, err)
 		}
-		env := datalog.NewBindings()
+		env := NewBindings()
 		unified := a.Head.Unify(b.Head, env)
 		if unified == nil {
 			if len(test.R) > 0 {
@@ -190,20 +188,23 @@ func TestUnify(t *testing.T) {
 				continue
 			}
 
-			fmt.Printf("Unify(%s,%s) => %s %s\n", test.A, test.B, unified, env)
+			if false {
+				fmt.Printf("Unify(%s,%s) => %s %s\n",
+					test.A, test.B, unified, env)
+			}
 
 			// Check env bindings.
 			for k, v := range test.E {
-				sym, _ := datalog.Intern(k, false)
-				binding, ok := env[sym]
-				if !ok {
+				sym, _ := Intern(k, false)
+				term := env.Map(NewTermVariable(sym))
+				if term == nil {
 					t.Errorf("%v: Symbol %s has no binding in environment %s\n",
 						test, k, env)
 				} else {
-					if v != binding.String() {
+					if v != term.String() {
 						t.Errorf(
 							"Symbol %s: invalid binding in %s: %s vs %s\n",
-							k, env, v, binding)
+							k, env, v, term)
 					}
 				}
 			}
@@ -211,23 +212,6 @@ func TestUnify(t *testing.T) {
 	}
 }
 
-func BenchmarkUnify(bench *testing.B) {
-	a, _, err := parseClause(unifyTests[15].A)
-	if err != nil {
-		bench.Fatalf("Failed to parse clause: %s", err)
-	}
-	b, _, err := parseClause(unifyTests[15].B)
-	if err != nil {
-		bench.Fatalf("Failed to parse clause: %s", err)
-	}
-
-	bench.ResetTimer()
-	for i := 0; i < bench.N; i++ {
-		env := datalog.NewBindings()
-		a.Head.Unify(b.Head, env)
-	}
-}
-
-func parseClause(input string) (*datalog.Clause, datalog.ClauseType, error) {
-	return datalog.NewParser("{data}", strings.NewReader(input)).Parse()
+func parseClause(input string) (*Clause, ClauseType, error) {
+	return NewParser("{data}", strings.NewReader(input)).Parse()
 }

@@ -11,7 +11,6 @@ package datalog
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"testing"
 )
@@ -76,41 +75,6 @@ func TestSLG(t *testing.T) {
 			result2 := Execute(clause.Head, db, nil)
 			for _, r := range result2 {
 				fmt.Printf("=> %s\n", r)
-			}
-		}
-	}
-}
-
-func BenchmarkEval(b *testing.B) {
-	file := "clique1000.pl"
-	for i := 0; i < b.N; i++ {
-		f, err := os.Open(file)
-		if err != nil {
-			b.Errorf("Failed to open test file %s: %s", file, err)
-			return
-		}
-		defer f.Close()
-
-		parser := NewParser(file, f)
-		db := NewMemDB()
-		for {
-			clause, clauseType, err := parser.Parse()
-			if err != nil {
-				if err != io.EOF {
-					b.Errorf("Parse failed: %v", err)
-					return
-				}
-				break
-			}
-			switch clauseType {
-			case ClauseFact:
-				db.Add(clause)
-
-			case ClauseQuery:
-				result := QuerySLG(clause.Head, db, nil)
-				for _, r := range result {
-					fmt.Printf("=> %s\n", r)
-				}
 			}
 		}
 	}

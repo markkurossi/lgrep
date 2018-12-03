@@ -11,6 +11,10 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Profiling output files.
+cpu.prof
+mem.prof
+
 # Binaries
 lgrep
 datalog/cli/cli
