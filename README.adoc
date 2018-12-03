@@ -22,21 +22,12 @@ Restart the rsyslog service:
 
     $ service rsyslog restart
 
-== License
-
-The file `datalog/slg.go` is derived from the
-`https://github.com/amzuko/gotalog` version and it is licensed under
-GNU GENERAL PUBLIC LICENSE v3. All other files are copyright by Markku
-Rossi and licensed under MIT license. Please note that if you use this
-project with the included `datalog/slg.go`, the the whole project
-falls under the GNU GPLv3 license.
-
 == TODO
 
 https://docs.microsoft.com/en-us/windows/desktop/wec/setting-up-a-source-initiated-subscription
 
 == Datalog
 
-                	Mitre	Gotalog	SLG	LGrep
-	clique1000      3.160	0.503	1.470	0.742
-        induction1000	2.874	0.391	0.659	0.588
+                	Mitre	Gotalog	LGrep
+	clique1000      3.160	0.503	0.742
+        induction1000	2.874	0.391	0.588

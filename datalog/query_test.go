@@ -144,11 +144,7 @@ func TestData(t *testing.T) {
 
 			case ClauseQuery:
 				var result ResultSet
-				if false {
-					result = QuerySLG(clause.Head, db, nil)
-				} else {
-					result = Execute(clause.Head, db, nil)
-				}
+				result = Execute(clause.Head, db, nil)
 				expected := parseString(t, test.result)
 				if len(result) != len(expected) {
 					t.Errorf("Unexpected number of results: %d vs. %d\n",

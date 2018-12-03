@@ -50,19 +50,3 @@ func BenchmarkUnify(b *testing.B) {
 		}
 	}
 }
-
-func BenchmarkUnifySLG(b *testing.B) {
-	a1 := atom1()
-	a2 := atom2()
-
-	for i := 0; i < b.N; i++ {
-		env := a1.UnifySLG(a2)
-		if env == nil {
-			b.Fatalf("%s.UnifySLG(%s) failed\n", a1, a2)
-		}
-		unified := a1.SubstituteSLG(env)
-		if unified == nil {
-			b.Fatalf("%s.SubstituteSLG(%s) failed\n", a1, env)
-		}
-	}
-}
