@@ -92,7 +92,7 @@ var unifyTests = []UnifyTest{
 	UnifyTest{
 		A: "p(X,Y).",
 		B: "p(Q,Q).",
-		R: "P(Y,Y).",
+		R: "p(Y,Y).",
 		E: map[string]string{
 			"Q": "X",
 			"X": "Y",
@@ -101,7 +101,7 @@ var unifyTests = []UnifyTest{
 	UnifyTest{
 		A: "p(a,Y,X).",
 		B: "p(Q,z,Q).",
-		R: "P(a,z,a).",
+		R: "p(a,z,a).",
 		E: map[string]string{
 			"Q": "a",
 			"Y": "z",
@@ -111,7 +111,7 @@ var unifyTests = []UnifyTest{
 	UnifyTest{
 		A: "p(Q,z,Q).",
 		B: "p(a,Y,X).",
-		R: "P(a,z,a).",
+		R: "p(a,z,a).",
 		E: map[string]string{
 			"Q": "a",
 			"Y": "z",
@@ -121,7 +121,7 @@ var unifyTests = []UnifyTest{
 	UnifyTest{
 		A: "p(X,a).",
 		B: "p(a,X).",
-		R: "P(a,a).",
+		R: "p(a,a).",
 		E: map[string]string{
 			"X": "a",
 		},
@@ -145,7 +145,7 @@ var unifyTests = []UnifyTest{
 	UnifyTest{
 		A: "p(X,Y,Z).",
 		B: "p(a,X,Y).",
-		R: "P(a,a,a).",
+		R: "p(a,a,a).",
 		E: map[string]string{
 			"X": "a",
 			"Y": "a",
@@ -155,7 +155,7 @@ var unifyTests = []UnifyTest{
 	UnifyTest{
 		A: "p(a,X,Y).",
 		B: "p(X,Y,Z).",
-		R: "P(a,a,a).",
+		R: "p(a,a,a).",
 		E: map[string]string{
 			"X": "a",
 			"Y": "a",
@@ -188,9 +188,19 @@ func TestUnify(t *testing.T) {
 				continue
 			}
 
+			r, _, err := parseClause(test.R)
+			if err != nil {
+				t.Fatalf("Failed to parser clause '%s': %s\n", test.R, err)
+			}
+			unified := a.Head.Clone().Substitute(env)
+			if !unified.Equals(r.Head) {
+				t.Errorf("Unified %s not equal to expected %s\n",
+					unified, r.Head)
+			}
+
 			if false {
 				fmt.Printf("Unify(%s,%s) => %s %s\n",
-					test.A, test.B, a.Head.Clone().Substitute(env), env)
+					test.A, test.B, unified, env)
 			}
 
 			// Check env bindings.
