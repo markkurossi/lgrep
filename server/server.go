@@ -117,7 +117,7 @@ func (s *Server) ServeSyslogUDP(address string) error {
 
 func (s *Server) executeQueries() {
 	for _, q := range s.queries {
-		result := datalog.Query(q.Clause.Head, s.db, q.Predicates)
+		result := datalog.Execute(q.Clause.Head, s.db, q.Predicates)
 		for _, r := range result {
 			for k, v := range q.Predicates {
 				if r.Timestamp > v {
