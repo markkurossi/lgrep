@@ -19,7 +19,7 @@ type Term interface {
 	Type() TermType
 	Variable() Symbol
 	Rename(env *Bindings)
-	Unify(t Term, env *Bindings) Term
+	Unify(t Term, env *Bindings) bool
 	Equals(t Term) bool
 	String() string
 	RenameSLG(env EnvironmentSLG)
@@ -74,39 +74,39 @@ func (t *TermVariable) UnifySLG(other Term, env EnvironmentSLG) EnvironmentSLG {
 	return env
 }
 
-func (t *TermVariable) Unify(other Term, env *Bindings) Term {
+func (t *TermVariable) Unify(other Term, env *Bindings) bool {
 	switch o := other.(type) {
 	case *TermVariable:
 		if t.Symbol == o.Symbol {
 			// Same variable.
-			return t
+			return true
 		}
 		// Unify(T, O): replace O with T
 		newT := env.Map(t)
-		if !env.Bind(o.Symbol, newT) {
-			// O already bound, bind T to O's new binding.
-			newO := env.Map(o)
-			if !env.Bind(t.Symbol, newO) {
-				return nil
-			}
-			return newO
+		if env.Bind(o.Symbol, newT) {
+			return true
 		}
-		return newT
+		// O already bound, bind T to O's new binding.
+		newO := env.Map(o)
+		if env.Bind(t.Symbol, newO) {
+			return true
+		}
+		return false
 
 	case *TermConstant:
 		// Unify(T, o): assign T to o
-		if !env.Bind(t.Symbol, o) {
-			// T already bound.
-			newT := env.Map(t)
-			if o.Equals(newT) {
-				// Same binding.
-				return newT
-			}
-			return nil
+		if env.Bind(t.Symbol, o) {
+			return true
 		}
-		return o
+		// T already bound.
+		newT := env.Map(t)
+		if o.Equals(newT) {
+			// Same binding.
+			return true
+		}
+		return false
 	}
-	return nil
+	return false
 }
 
 func (t *TermVariable) Equals(other Term) bool {
@@ -166,28 +166,28 @@ func (t *TermConstant) UnifySLG(other Term, env EnvironmentSLG) EnvironmentSLG {
 	return nil
 }
 
-func (t *TermConstant) Unify(other Term, env *Bindings) Term {
+func (t *TermConstant) Unify(other Term, env *Bindings) bool {
 	switch o := other.(type) {
 	case *TermVariable:
 		// Unify(t, O): assign O to t
-		if !env.Bind(o.Symbol, t) {
-			// O already bound.
-			newO := env.Map(o)
-			if t.Equals(newO) {
-				// Same binding.
-				return newO
-			}
-			return nil
+		if env.Bind(o.Symbol, t) {
+			return true
 		}
-		return t
+		// O already bound.
+		newO := env.Map(o)
+		if t.Equals(newO) {
+			// Same binding.
+			return true
+		}
+		return false
 
 	case *TermConstant:
 		// Unify(t, o): t must be o
 		if t.Value == o.Value {
-			return t
+			return true
 		}
 	}
-	return nil
+	return false
 }
 
 func (t *TermConstant) Equals(other Term) bool {

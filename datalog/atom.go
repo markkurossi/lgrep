@@ -102,7 +102,7 @@ func (a *Atom) Unify(o *Atom, env *Bindings) bool {
 			continue
 		}
 
-		if at.Unify(ot, env) == nil {
+		if !at.Unify(ot, env) {
 			return false
 		}
 	}
