@@ -35,7 +35,7 @@ func Execute(q *Atom, db DB, limits Predicates) []*Clause {
 		bindings: NewBindings(),
 		table:    &Table{},
 	}
-	query.Search(func(result []*Clause) {})
+	query.Search()
 	return query.result
 }
 
@@ -48,6 +48,7 @@ type Query struct {
 	result   []*Clause
 	parent   *Query
 	level    int
+	waiter   func(result []*Clause)
 }
 
 func (q *Query) Printf(format string, a ...interface{}) {
@@ -61,10 +62,10 @@ func (q *Query) Equals(o *Query) bool {
 	return q.atom.Equals(o.atom)
 }
 
-func (q *Query) Search(cont func(result []*Clause)) {
-	found, entry := q.table.Add(q, cont)
+func (q *Query) Search() {
+	found, entry := q.table.Add(q)
 	if found {
-		cont(entry.q.result)
+		q.searchResult(entry.q.result)
 		return
 	}
 
@@ -97,7 +98,7 @@ func (q *Query) Search(cont func(result []*Clause)) {
 		}
 	}
 
-	cont(q.result)
+	q.searchResult(q.result)
 
 	// Notify waiters.
 	start := 0
@@ -107,10 +108,16 @@ func (q *Query) Search(cont func(result []*Clause)) {
 			if debug {
 				q.Printf("->%s %v\n", entry.q.atom, q.result[start:end])
 			}
-			waiter(q.result[start:end])
+			waiter.searchResult(q.result[start:end])
 		}
 		start = end
 		end = len(q.result)
+	}
+}
+
+func (q *Query) searchResult(result []*Clause) {
+	if q.waiter != nil {
+		q.waiter(result)
 	}
 }
 
@@ -128,8 +135,7 @@ func (q *Query) subQuery(atom *Atom, bindings Bindings) *Query {
 
 func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings Bindings) {
 	subQuery := q.subQuery(atom, bindings)
-
-	subQuery.Search(func(clauses []*Clause) {
+	subQuery.waiter = func(clauses []*Clause) {
 		if debug {
 			q.Printf("%s->%s\n", atom, clauses)
 		}
@@ -161,7 +167,8 @@ func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings Bindings) {
 				q.rule(head, expanded, rest[1:], env)
 			}
 		}
-	})
+	}
+	subQuery.Search()
 }
 
 func (q *Query) addResult(result *Clause) {
@@ -180,10 +187,10 @@ type Table struct {
 	entries []*TableEntry
 }
 
-func (table *Table) Add(q *Query, cont func([]*Clause)) (bool, *TableEntry) {
+func (table *Table) Add(q *Query) (bool, *TableEntry) {
 	for _, entry := range table.entries {
 		if entry.q.Equals(q) {
-			entry.waiters = append(entry.waiters, cont)
+			entry.waiters = append(entry.waiters, q)
 			return true, entry
 		}
 	}
@@ -196,5 +203,5 @@ func (table *Table) Add(q *Query, cont func([]*Clause)) (bool, *TableEntry) {
 
 type TableEntry struct {
 	q       *Query
-	waiters []func([]*Clause)
+	waiters []*Query
 }
