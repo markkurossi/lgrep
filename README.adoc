@@ -25,9 +25,3 @@ Restart the rsyslog service:
 == TODO
 
 https://docs.microsoft.com/en-us/windows/desktop/wec/setting-up-a-source-initiated-subscription
-
-== Datalog
-
-                	Mitre	Gotalog	LGrep
-	clique1000      3.160	0.503	0.742
-        induction1000	2.874	0.391	0.588

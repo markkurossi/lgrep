@@ -10,6 +10,7 @@ package datalog
 
 import (
 	"fmt"
+	"strconv"
 )
 
 const debug bool = false
@@ -33,7 +34,7 @@ func Execute(q *Atom, db DB, limits Predicates) []*Clause {
 		db:       db,
 		limits:   limits,
 		bindings: NewBindings(),
-		table:    &Table{},
+		table:    NewTable(),
 	}
 	query.Search()
 	return query.result
@@ -183,21 +184,63 @@ func (q *Query) addResult(result *Clause) {
 	q.result = append(q.result, result)
 }
 
+func NewTable() *Table {
+	return &Table{
+		strings: make(map[string]int),
+		entries: make(map[string]*TableEntry),
+	}
+}
+
 type Table struct {
-	entries []*TableEntry
+	strings      map[string]int
+	nextStringID int
+	entries      map[string]*TableEntry
+}
+
+func (table *Table) MakeID(atom *Atom) string {
+
+	var nextSymbol = 0
+	vars := make(map[Symbol]int)
+
+	result := strconv.Itoa(int(atom.Predicate))
+	for _, term := range atom.Terms {
+		sym := term.Variable()
+		if sym != NilSymbol {
+			// Variable.
+			id, ok := vars[sym]
+			if !ok {
+				id = nextSymbol
+				nextSymbol++
+				vars[sym] = id
+			}
+			result += ",S"
+			result += strconv.Itoa(id)
+		} else {
+			// Constant.
+			id, ok := table.strings[term.String()]
+			if !ok {
+				id = table.nextStringID
+				table.nextStringID++
+				table.strings[term.String()] = id
+			}
+			result += ",s"
+			result += strconv.Itoa(id)
+		}
+	}
+	return result
 }
 
 func (table *Table) Add(q *Query) (bool, *TableEntry) {
-	for _, entry := range table.entries {
-		if entry.q.Equals(q) {
-			entry.waiters = append(entry.waiters, q)
-			return true, entry
-		}
+	id := table.MakeID(q.atom)
+	entry, ok := table.entries[id]
+	if ok {
+		entry.waiters = append(entry.waiters, q)
+		return true, entry
 	}
-	entry := &TableEntry{
+	entry = &TableEntry{
 		q: q,
 	}
-	table.entries = append(table.entries, entry)
+	table.entries[id] = entry
 	return false, entry
 }
 
