@@ -88,13 +88,14 @@ var unifyTests = []UnifyTest{
 			"Y": "W",
 		},
 	},
+	// 9
 	UnifyTest{
 		A: "p(X,Y).",
 		B: "p(Q,Q).",
-		R: "P(X,X).",
+		R: "P(Y,Y).",
 		E: map[string]string{
 			"Q": "X",
-			"Y": "X",
+			"X": "Y",
 		},
 	},
 	UnifyTest{
@@ -165,7 +166,7 @@ var unifyTests = []UnifyTest{
 
 func TestUnify(t *testing.T) {
 	for index, test := range unifyTests {
-		if index != 15 && false {
+		if index != 9 && false {
 			continue
 		}
 		a, _, err := parseClause(test.A)
@@ -177,8 +178,7 @@ func TestUnify(t *testing.T) {
 			t.Fatalf("Failed to parse clause '%s': %s\n", test.B, err)
 		}
 		env := NewBindings()
-		unified := a.Head.Unify(b.Head, env)
-		if unified == nil {
+		if !a.Head.Unify(b.Head, env) {
 			if len(test.R) > 0 {
 				t.Errorf("Unify(%s, %s) failed, expected %s\n", a, b, test.R)
 			}
@@ -190,7 +190,7 @@ func TestUnify(t *testing.T) {
 
 			if false {
 				fmt.Printf("Unify(%s,%s) => %s %s\n",
-					test.A, test.B, unified, env)
+					test.A, test.B, a.Head.Clone().Substitute(env), env)
 			}
 
 			// Check env bindings.
@@ -203,8 +203,8 @@ func TestUnify(t *testing.T) {
 				} else {
 					if v != term.String() {
 						t.Errorf(
-							"Symbol %s: invalid binding in %s: %s vs %s\n",
-							k, env, v, term)
+							"%d: Symbol %s: invalid binding in %s: %s vs %s\n",
+							index, k, env, v, term)
 					}
 				}
 			}

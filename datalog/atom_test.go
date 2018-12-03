@@ -41,9 +41,12 @@ func BenchmarkUnify(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		env := NewBindings()
-		unified := a1.Unify(a2, env)
-		if unified == nil {
+		if !a1.Unify(a2, env) {
 			b.Fatalf("%s.Unify(%s) failed\n", a1, a2)
+		}
+		unified := a1.Clone().Substitute(env)
+		if unified == nil {
+			b.Fatalf("%s.Substitute(%s) failed\n", a1, env)
 		}
 	}
 }

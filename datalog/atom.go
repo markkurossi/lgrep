@@ -86,39 +86,35 @@ func (a *Atom) Rename(env *Bindings) {
 	}
 }
 
-func (a *Atom) Unify(o *Atom, env *Bindings) *Atom {
+func (a *Atom) Unify(o *Atom, env *Bindings) bool {
 	if a.Predicate != o.Predicate {
-		return nil
+		return false
 	}
 	if len(a.Terms) != len(o.Terms) {
-		return nil
+		return false
 	}
-	var newTerms []Term
-
-	baseEnv := env.Clone()
 
 	for i, t := range a.Terms {
-		at := baseEnv.Map(t)
-		ot := baseEnv.Map(o.Terms[i])
+		at := env.Map(t)
+		ot := env.Map(o.Terms[i])
 
-		unified := at.Unify(ot, env)
-		if unified == nil {
-			return nil
+		if at.Equals(ot) {
+			continue
 		}
-		newTerms = append(newTerms, unified)
+
+		if at.Unify(ot, env) == nil {
+			return false
+		}
 	}
 
-	return &Atom{
-		Predicate: a.Predicate,
-		Terms:     newTerms,
-		// XXX flags
-	}
+	return true
 }
 
 func (a *Atom) Clone() *Atom {
 	n := &Atom{
 		Predicate: a.Predicate,
 		Terms:     make([]Term, len(a.Terms)),
+		Flags:     a.Flags,
 	}
 	for i, term := range a.Terms {
 		n.Terms[i] = term

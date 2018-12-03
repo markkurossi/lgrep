@@ -75,28 +75,25 @@ func (q *Query) Search() {
 		env := q.bindings.Clone()
 
 		if clause.IsFact() {
-			unified := q.atom.Unify(clause.Head, env)
-			if unified != nil {
+			if q.atom.Unify(clause.Head, env) {
 				r := &Clause{
-					Head: unified,
+					Head: q.atom.Clone().Substitute(env),
 				}
 				if debug {
-					q.Printf("Search.fact: %s\n", unified)
+					q.Printf("Search.fact: %s\n", r.Head)
 				}
 				q.addResult(r)
 			}
 		} else {
 			// Iterate rules
 			renamed := clause.Rename()
-
-			unified := q.atom.Unify(renamed.Head, env)
-			if unified == nil {
+			if !q.atom.Unify(renamed.Head, env) {
 				continue
 			}
-
 			renamed.Substitute(env)
 
-			q.rule(unified, renamed.Body[0], renamed.Body[1:], NewBindings())
+			q.rule(q.atom.Clone().Substitute(env),
+				renamed.Body[0], renamed.Body[1:], NewBindings())
 		}
 	}
 
@@ -148,26 +145,25 @@ func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
 	for _, clause := range clauses {
 		env := bindings.Clone()
 
-		unified := atom.Unify(clause.Head, env)
-		if unified == nil {
+		if !atom.Unify(clause.Head, env) {
 			continue
 		}
 
 		if len(rest) == 0 {
-			if debug {
-				q.Printf("rule.fact: %s, env=%s\n", unified, env)
-			}
 			// Unified is part of the solution, and env contains
 			// the bindings for the rule head.  Expand head with
 			// env and add to results.
 			r := &Clause{
 				Head: head.Clone().Substitute(env),
 			}
+			if debug {
+				q.Printf("rule.fact: %s, env=%s\n", r.Head, env)
+			}
 			q.addResult(r)
 		} else {
 			// Sideways information passing strategies (SIPS)
 			if debug {
-				q.Printf("sips: %s\n", unified)
+				q.Printf("sips: %s\n", env)
 			}
 			expanded := rest[0].Clone().Substitute(env)
 			q.rule(head, expanded, rest[1:], env)
