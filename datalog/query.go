@@ -40,15 +40,17 @@ func Execute(q *Atom, db DB, limits Predicates) []*Clause {
 }
 
 type Query struct {
-	atom     *Atom
-	db       DB
-	limits   Predicates
-	bindings Bindings
-	table    *Table
-	result   []*Clause
-	parent   *Query
-	level    int
-	waiter   func(result []*Clause)
+	atom           *Atom
+	db             DB
+	limits         Predicates
+	bindings       Bindings
+	table          *Table
+	result         []*Clause
+	parent         *Query
+	level          int
+	parentHead     *Atom
+	parentRest     []*Atom
+	parentBindings Bindings
 }
 
 func (q *Query) Printf(format string, a ...interface{}) {
@@ -116,59 +118,61 @@ func (q *Query) Search() {
 }
 
 func (q *Query) searchResult(result []*Clause) {
-	if q.waiter != nil {
-		q.waiter(result)
-	}
-}
-
-func (q *Query) subQuery(atom *Atom, bindings Bindings) *Query {
-	return &Query{
-		atom:     atom,
-		db:       q.db,
-		limits:   q.limits,
-		bindings: bindings,
-		table:    q.table,
-		parent:   q,
-		level:    q.level + 1,
+	if q.parent != nil {
+		q.parent.subQueryResult(q.parentHead, q.atom, q.parentRest,
+			q.parentBindings, result)
 	}
 }
 
 func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings Bindings) {
-	subQuery := q.subQuery(atom, bindings)
-	subQuery.waiter = func(clauses []*Clause) {
-		if debug {
-			q.Printf("%s->%s\n", atom, clauses)
-		}
-		for _, clause := range clauses {
-			env := bindings.Clone()
-
-			unified := atom.Unify(clause.Head, env)
-			if unified == nil {
-				continue
-			}
-
-			if len(rest) == 0 {
-				if debug {
-					q.Printf("rule.fact: %s, env=%s\n", unified, env)
-				}
-				// Unified is part of the solution, and env contains
-				// the bindings for the rule head.  Expand head with
-				// env and add to results.
-				r := &Clause{
-					Head: head.Clone().Substitute(env),
-				}
-				q.addResult(r)
-			} else {
-				// Sideways information passing strategies (SIPS)
-				if debug {
-					q.Printf("sips: %s\n", unified)
-				}
-				expanded := rest[0].Clone().Substitute(env)
-				q.rule(head, expanded, rest[1:], env)
-			}
-		}
+	subQuery := &Query{
+		atom:           atom,
+		db:             q.db,
+		limits:         q.limits,
+		bindings:       bindings,
+		table:          q.table,
+		parent:         q,
+		level:          q.level + 1,
+		parentHead:     head,
+		parentRest:     rest,
+		parentBindings: bindings,
 	}
 	subQuery.Search()
+}
+
+func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
+	bindings Bindings, clauses []*Clause) {
+	if debug {
+		q.Printf("%s->%s\n", atom, clauses)
+	}
+	for _, clause := range clauses {
+		env := bindings.Clone()
+
+		unified := atom.Unify(clause.Head, env)
+		if unified == nil {
+			continue
+		}
+
+		if len(rest) == 0 {
+			if debug {
+				q.Printf("rule.fact: %s, env=%s\n", unified, env)
+			}
+			// Unified is part of the solution, and env contains
+			// the bindings for the rule head.  Expand head with
+			// env and add to results.
+			r := &Clause{
+				Head: head.Clone().Substitute(env),
+			}
+			q.addResult(r)
+		} else {
+			// Sideways information passing strategies (SIPS)
+			if debug {
+				q.Printf("sips: %s\n", unified)
+			}
+			expanded := rest[0].Clone().Substitute(env)
+			q.rule(head, expanded, rest[1:], env)
+		}
+	}
 }
 
 func (q *Query) addResult(result *Clause) {
