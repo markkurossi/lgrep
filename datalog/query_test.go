@@ -115,6 +115,17 @@ r(a, b).
 r(a, c).
 `,
 	},
+	test{
+		file: "ancestor.dl",
+		result: `
+ancestor(bob, douglas).
+ancestor(bob, john).
+ancestor(ebbon, bob).
+ancestor(ebbon, douglas).
+ancestor(ebbon, john).
+ancestor(john, douglas).
+`,
+	},
 }
 
 func TestData(t *testing.T) {

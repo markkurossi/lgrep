@@ -129,19 +129,25 @@ func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings *Bindings) {
 	if debug {
 		q.Printf("<Rule %s :- %s,%v\n", head, atom, rest)
 	}
-	subQuery := &Query{
-		atom:           atom,
-		db:             q.db,
-		limits:         q.limits,
-		bindings:       bindings,
-		table:          q.table,
-		parent:         q,
-		level:          q.level + 1,
-		parentHead:     head,
-		parentRest:     rest,
-		parentBindings: bindings,
+	if atom.Predicate < SymFirstIntern {
+		if atom.Eval(bindings) {
+			q.exprResult(head, atom, rest, bindings)
+		}
+	} else {
+		subQuery := &Query{
+			atom:           atom,
+			db:             q.db,
+			limits:         q.limits,
+			bindings:       bindings,
+			table:          q.table,
+			parent:         q,
+			level:          q.level + 1,
+			parentHead:     head,
+			parentRest:     rest,
+			parentBindings: bindings,
+		}
+		subQuery.Search()
 	}
-	subQuery.Search()
 }
 
 func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
@@ -178,6 +184,18 @@ func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
 	}
 }
 
+func (q *Query) exprResult(head, atom *Atom, rest []*Atom, bindings *Bindings) {
+	if len(rest) == 0 {
+		r := &Clause{
+			Head: head.Clone().Substitute(bindings),
+		}
+		q.addResult(r)
+	} else {
+		expanded := rest[0].Clone().Substitute(bindings)
+		q.rule(head, expanded, rest[1:], bindings)
+	}
+}
+
 func (q *Query) addResult(result *Clause) {
 	if debug {
 		q.Printf("=> %s\n", result)
@@ -211,7 +229,7 @@ func (table *Table) MakeID(atom *Atom) string {
 	result := strconv.Itoa(int(atom.Predicate))
 	for _, term := range atom.Terms {
 		sym := term.Variable()
-		if sym != NilSymbol {
+		if sym != SymNil {
 			// Variable.
 			id, ok := vars[sym]
 			if !ok {

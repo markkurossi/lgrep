@@ -9,6 +9,7 @@
 package datalog
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -19,6 +20,7 @@ var clauseData = []string{
 	"data(a,b). data(a,b).",
 	"data(X,Y):-x(X,b). data(Y,Z):-x(Y,b).",
 	"data(X,Y):-x(X,b),y(b,Y). data(Y,Z):-x(Y,b),y(b,Z).",
+	"a(A,B) :- A=B. a(A,B) :- A=B.",
 }
 
 func TestClause(t *testing.T) {
@@ -37,6 +39,8 @@ func TestClause(t *testing.T) {
 		}
 		if !c1.Equals(c2) {
 			t.Errorf("%s != %s\n", c1, c2)
+		} else if false {
+			fmt.Printf("%s = %s\n", c1, c2)
 		}
 	}
 }

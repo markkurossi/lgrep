@@ -112,7 +112,7 @@ func (t *TermConstant) Type() TermType {
 }
 
 func (t *TermConstant) Variable() Symbol {
-	return NilSymbol
+	return SymNil
 }
 
 func (t *TermConstant) Rename(env *Bindings) {

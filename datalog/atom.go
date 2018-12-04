@@ -8,6 +8,11 @@
 
 package datalog
 
+import (
+	"fmt"
+	"strconv"
+)
+
 type Flags int
 
 const (
@@ -28,6 +33,10 @@ func NewAtom(predicate Symbol, terms []Term) *Atom {
 }
 
 func (a *Atom) String() string {
+	if a.Predicate.IsExpr() {
+		return fmt.Sprintf("%s %s %s", a.Terms[0], a.Predicate, a.Terms[1])
+	}
+
 	str := a.Predicate.String()
 	if len(a.Terms) > 0 {
 		str += "("
@@ -129,4 +138,42 @@ func (a *Atom) Substitute(env *Bindings) *Atom {
 		a.Terms[i] = env.Map(term)
 	}
 	return a
+}
+
+func (a *Atom) Eval(env *Bindings) bool {
+	if len(a.Terms) != 2 {
+		return false
+	}
+
+	switch a.Predicate {
+	case SymEQ:
+		return a.Terms[0].Unify(a.Terms[1], env)
+
+	case SymGE, SymGT, SymLE, SymLT:
+		v1, err := strconv.Atoi(env.Map(a.Terms[0]).String())
+		if err != nil {
+			fmt.Printf("%s: %s\n", a.Predicate, err)
+			return false
+		}
+		v2, err := strconv.Atoi(env.Map(a.Terms[1]).String())
+		if err != nil {
+			fmt.Printf(">: %s\n", err)
+			return false
+		}
+		switch a.Predicate {
+		case SymGT:
+			return v1 > v2
+		case SymGE:
+			return v1 >= v2
+		case SymLE:
+			return v1 <= v2
+		case SymLT:
+			return v1 < v2
+		default:
+			return false
+		}
+
+	default:
+		return false
+	}
 }

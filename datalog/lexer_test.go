@@ -48,6 +48,13 @@ edge(8, 9).
 edge(9, 10).
 edge(10, 0).
 same_clique(0,10)?
+
+_
+=
+>=
+>
+<=
+<
 `
 
 func TestLexer(t *testing.T) {

@@ -52,6 +52,11 @@ func (p *Parser) Parse() (clause *Clause, clauseType ClauseType, err error) {
 	if err != nil {
 		return
 	}
+	if atom.Predicate.IsExpr() {
+		clauseType = ClauseError
+		err = fmt.Errorf("Invalid clause head: %s", atom)
+		return
+	}
 	clause = NewClause(atom, nil)
 
 	var token *Token
@@ -106,6 +111,18 @@ func (p *Parser) parseAtom() (*Atom, error) {
 	if err != nil {
 		return nil, err
 	}
+	next, err := p.peekToken()
+	if err != nil {
+		return nil, err
+	}
+	if next.IsExpr() {
+		_, err = p.getToken()
+		if err != nil {
+			return nil, err
+		}
+		return p.parseExpr(token, next)
+	}
+
 	if token.Type != TokenIdentifier && token.Type != TokenString {
 		return nil, fmt.Errorf("%s: unexpected token: %s",
 			token.Position, token)
@@ -116,7 +133,7 @@ func (p *Parser) parseAtom() (*Atom, error) {
 		Predicate: symbol,
 	}
 
-	next, err := p.peekToken()
+	next, err = p.peekToken()
 	if err != nil {
 		return nil, err
 	}
@@ -183,4 +200,41 @@ func (p *Parser) parseAtom() (*Atom, error) {
 	}
 
 	return atom, nil
+}
+
+func (p *Parser) parseExpr(left *Token, op TokenType) (*Atom, error) {
+	right, err := p.getToken()
+	if err != nil {
+		return nil, err
+	}
+	lTerm, err := p.makeExprTerm(left)
+	if err != nil {
+		return nil, err
+	}
+	rTerm, err := p.makeExprTerm(right)
+	if err != nil {
+		return nil, err
+	}
+	predicate, err := op.Symbol()
+	if err != nil {
+		return nil, err
+	}
+	return &Atom{
+		Predicate: predicate,
+		Terms:     []Term{lTerm, rTerm},
+	}, nil
+}
+
+func (p *Parser) makeExprTerm(token *Token) (Term, error) {
+	switch token.Type {
+	case TokenVariable:
+		symbol, _ := Intern(token.Value, false)
+		return NewTermVariable(symbol), nil
+
+	case TokenIdentifier, TokenString:
+		return NewTermConstant(token.Value, token.Type == TokenString), nil
+
+	default:
+		return nil, fmt.Errorf("Invalid expression element %s", token)
+	}
 }

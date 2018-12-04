@@ -22,16 +22,43 @@ type SymbolName struct {
 
 var (
 	m                    = &sync.Mutex{}
-	nextSymbolID  Symbol = 1
+	nextSymbolID  Symbol = SymFirstIntern
 	symbolsByID          = make(map[Symbol]SymbolName)
 	symbolsByName        = make(map[string]Symbol)
 )
 
 const (
-	NilSymbol Symbol = 0
+	SymNil Symbol = iota
+	SymEQ
+	SymGE
+	SymGT
+	SymLE
+	SymLT
+	SymFirstIntern
 )
 
+func (s Symbol) IsExpr() bool {
+	return s != SymNil && s < SymFirstIntern
+}
+
 func (s Symbol) String() string {
+	if s.IsExpr() {
+		switch s {
+		case SymEQ:
+			return "="
+		case SymGE:
+			return ">="
+		case SymGT:
+			return ">"
+		case SymLE:
+			return "<="
+		case SymLT:
+			return "<"
+		default:
+			return fmt.Sprintf("{expr %d}", s)
+		}
+	}
+
 	m.Lock()
 	name, ok := symbolsByID[s]
 	m.Unlock()

@@ -54,7 +54,7 @@ func (env *Bindings) Clone() *Bindings {
 // term if the environment does not have a mapping for the term.
 func (env *Bindings) Map(term Term) Term {
 	sym := term.Variable()
-	if sym != NilSymbol {
+	if sym != SymNil {
 		for _, b := range env.arr {
 			if b.sym == sym {
 				return b.val

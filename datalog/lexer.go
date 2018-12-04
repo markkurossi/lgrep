@@ -89,7 +89,43 @@ func (l *Lexer) GetToken() (*Token, error) {
 			}
 			continue
 
-		case '(', ',', ')', '=', '.', '~', '?':
+		case '=':
+			return &Token{
+				Type:     TokenEQ,
+				Position: *l.last,
+			}, nil
+
+		case '>':
+			r, err := l.ReadRune()
+			t := TokenGT
+			if err == nil {
+				if r == '=' {
+					t = TokenGE
+				} else {
+					l.UnreadRune()
+				}
+			}
+			return &Token{
+				Type:     t,
+				Position: *l.last,
+			}, nil
+
+		case '<':
+			r, err := l.ReadRune()
+			t := TokenLT
+			if err == nil {
+				if r == '=' {
+					t = TokenLE
+				} else {
+					l.UnreadRune()
+				}
+			}
+			return &Token{
+				Type:     t,
+				Position: *l.last,
+			}, nil
+
+		case '(', ',', ')', '.', '~', '?':
 			return &Token{
 				Type:     TokenType(r),
 				Position: *l.last,
@@ -271,7 +307,7 @@ func (l *Lexer) readIdentifier(r rune) (*Token, error) {
 
 func isIdentifierRune(r rune) bool {
 	switch r {
-	case '(', ',', ')', '=', ':', '.', '~', '?', '"', '%':
+	case '(', ',', ')', ':', '.', '~', '?', '"', '%':
 		return false
 
 	default:
@@ -286,12 +322,43 @@ type TokenType int
 
 const (
 	TokenArrow TokenType = iota + 256
+	TokenWildcard
+	TokenEQ
+	TokenGE
+	TokenGT
+	TokenLE
+	TokenLT
 	TokenError
 	TokenVariable
-	TokenWildcard
 	TokenIdentifier
 	TokenString
 )
+
+func (t TokenType) IsExpr() bool {
+	switch t {
+	case TokenEQ, TokenGE, TokenGT, TokenLE, TokenLT:
+		return true
+	default:
+		return false
+	}
+}
+
+func (t TokenType) Symbol() (Symbol, error) {
+	switch t {
+	case TokenEQ:
+		return SymEQ, nil
+	case TokenGE:
+		return SymGE, nil
+	case TokenGT:
+		return SymGT, nil
+	case TokenLE:
+		return SymLE, nil
+	case TokenLT:
+		return SymLT, nil
+	default:
+		return SymNil, fmt.Errorf("No symbol for token type %d", t)
+	}
+}
 
 type Token struct {
 	Type     TokenType
@@ -299,16 +366,25 @@ type Token struct {
 	Position Position
 }
 
+var tokenNames = map[TokenType]string{
+	TokenArrow:    ":-",
+	TokenWildcard: "_",
+	TokenEQ:       "=",
+	TokenGE:       ">=",
+	TokenGT:       ">",
+	TokenLE:       "<=",
+	TokenLT:       "<",
+	TokenError:    "{error}",
+}
+
 func (t *Token) String() string {
 	if t.Type < 256 {
 		return fmt.Sprintf("%c", rune(t.Type))
-	} else if t.Type == TokenArrow {
-		return ":-"
-	} else if t.Type == TokenError {
-		return "{error}"
-	} else if t.Type == TokenWildcard {
-		return "_"
 	} else {
+		name, ok := tokenNames[t.Type]
+		if ok {
+			return name
+		}
 		return t.Value
 	}
 }
