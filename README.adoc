@@ -22,6 +22,34 @@ Restart the rsyslog service:
 
     $ service rsyslog restart
 
+== Configure Remote System Logging with Windows Log Forwading
+
+Open `Local Group Policy Editor` and navigate to:
+
+    Local Computer Policy
+    |
+    +-Computer Configuration
+      |
+      +-Administrative Templates
+        |
+        +-Windows Components
+          |
+          +-Event Forwarding
+
+Open `Configure target Subscription Manager`:
+
+. Check `Enabled
+. Open `SubscriptionManagers` with the `Show...` button
+. Configure target subscription manager with the value:
+
+    Server=https://<FQDN/IP of collector>:5986/wsman/SubscriptionManager/WEC,Refresh=<seconds>,IssuerCA=<Thumbprint of the CA issuing TLS client authentication certificate>
+
+    winrm qc -transport:https
+
+
+
+
 == TODO
 
 https://docs.microsoft.com/en-us/windows/desktop/wec/setting-up-a-source-initiated-subscription
+https://github.com/nsacyber/Event-Forwarding-Guidance/tree/master/Subscriptions/samples
