@@ -271,8 +271,6 @@ func init() {
     <a:Action>http://schemas.dmtf.org/wbem/wsman/1/wsman/Ack</a:Action>
     <a:MessageID>uuid:6593DD91-ABB8-457B-AE7A-102715CAC7AC</a:MessageID>
     <a:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:To>
-    <p:OperationID s:mustUnderstand="false">{{.OperationID}}</p:OperationID>
-    <p:SequenceId>1</p:SequenceId>
     <a:RelatesTo>{{.MessageID}}</a:RelatesTo>
   </s:Header>
   <s:Body />
@@ -296,9 +294,9 @@ func (s *Server) subscriptionManager(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprint(err), http.StatusBadRequest)
 		return
 	}
-	env.Dump(fmt.Sprintf("Subscription Manager '%s'", r.URL.Path))
 
-	if env.Header.Action == wef.ActEnumerate {
+	switch env.Header.Action {
+	case wef.ActEnumerate:
 		w.Header().Add("Content-Type", "application/soap+xml;charset=UTF-8")
 		err = tmplSubscriptions.Execute(w, &Params{
 			OperationID:      env.Header.OperationID,
@@ -308,7 +306,13 @@ func (s *Server) subscriptionManager(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("Write failed: %s\n", err)
 		}
-	} else {
+
+	case wef.ActEnd:
+		w.WriteHeader(http.StatusNoContent)
+
+	default:
+		fmt.Printf("Unhandled action\n")
+		env.Dump(fmt.Sprintf("Subscription Manager '%s'", r.URL.Path))
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -342,20 +346,36 @@ func (s *Server) subscriptions(w http.ResponseWriter, r *http.Request) {
 	}
 	env.Dump(fmt.Sprintf("Subscription '%s'", r.URL.Path))
 
-	if env.Header.Action == wef.ActHeartbeat {
+	switch env.Header.Action {
+	case wef.ActHeartbeat, wef.ActEnd, wef.ActSubscriptionEnd:
+
+	case wef.ActEvents:
+		for idx, evt := range env.Body.Events {
+			e := &wef.Event{}
+			err = xml.Unmarshal([]byte(evt.Data), e)
+			if err != nil {
+				fmt.Printf("Failed to parse event: %s\n", err)
+				continue
+			}
+			fmt.Printf("Event %d: %#v\n", idx, e)
+		}
+
+	default:
+		fmt.Printf("Unhandled action: %s\n", env.Header.Action)
+		fmt.Printf("%s\n", dump)
+		fmt.Printf("%s", hex.Dump(data))
+	}
+
+	if env.AckRequested() {
 		w.Header().Add("Content-Type", "application/soap+xml;charset=UTF-8")
 		err = tmplAck.Execute(w, &Params{
 			OperationID: env.Header.OperationID,
 			MessageID:   env.Header.MessageID,
 		})
 		if err != nil {
-			log.Printf("Write failed: %s\n", err)
+			log.Printf("Response write failed: %s\n", err)
 		}
-	} else if env.Header.Action == wef.ActEnd {
-		w.WriteHeader(http.StatusNoContent)
 	} else {
-		fmt.Printf("%s\n", dump)
-		fmt.Printf("%s", hex.Dump(data))
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
