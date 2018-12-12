@@ -56,3 +56,29 @@ type WSManEvent struct {
 	Action string `xml:"Action,attr"`
 	Data   string `xml:",cdata"`
 }
+
+type Seconds int
+
+func (s Seconds) String() string {
+	return fmt.Sprintf("PT%d.000S", s)
+}
+
+type DeliveryOptions struct {
+	Heartbeats Seconds
+	MaxTime    Seconds
+}
+
+var DeliveryNormal = &DeliveryOptions{
+	Heartbeats: 900,
+	MaxTime:    900,
+}
+
+var DeliveryMinLatency = &DeliveryOptions{
+	Heartbeats: 3600,
+	MaxTime:    30,
+}
+
+var DeliveryMinBandwidth = &DeliveryOptions{
+	Heartbeats: 21600,
+	MaxTime:    21600,
+}

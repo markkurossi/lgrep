@@ -8,10 +8,76 @@
 
 package wef
 
+import (
+	"fmt"
+)
+
 type Event struct {
 	System        System
 	EventData     []EventData `xml:"EventData>Data"`
 	RenderingInfo *RenderingInfo
+}
+
+func (e *Event) Dump() {
+	r := &Report{}
+
+	r.Add("Provider", e.System.Provider.Name)
+	r.Add("EventID", e.System.EventID)
+	r.Add("Version", e.System.Version)
+	r.Add("Level", e.System.Level)
+	r.Add("Task", e.System.Task)
+	r.Add("Opcode", e.System.Opcode)
+	r.Add("Keywords", e.System.Keywords)
+	r.Add("Created", e.System.TimeCreated.SystemTime)
+	r.Add("Record ID", e.System.EventRecordID)
+	r.Add("Channel", e.System.Channel)
+	r.Add("Computer", e.System.Computer)
+
+	if e.System.Security != nil {
+		r.Add("UserID", e.System.Security.UserID)
+	}
+
+	for _, ed := range e.EventData {
+		r.Add(ed.Name, ed.Value)
+	}
+
+	var prefix = 0
+	for _, kv := range r.Data {
+		if len(kv.Key) > prefix {
+			prefix = len(kv.Key)
+		}
+	}
+
+	for _, kv := range r.Data {
+		fmt.Print(" ")
+		for i := 0; i+len(kv.Key) < prefix; i++ {
+			fmt.Print(" ")
+		}
+		fmt.Printf("%s : %s\n", kv.Key, kv.Val)
+	}
+
+	if e.RenderingInfo != nil {
+		fmt.Printf("\n%s\n", e.RenderingInfo.Message)
+	}
+}
+
+type Report struct {
+	Data []KeyValue
+}
+
+func (r *Report) Add(key, value string) {
+	if len(key) == 0 || len(value) == 0 {
+		return
+	}
+	r.Data = append(r.Data, KeyValue{
+		Key: key,
+		Val: value,
+	})
+}
+
+type KeyValue struct {
+	Key string
+	Val string
 }
 
 type System struct {

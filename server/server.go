@@ -213,7 +213,7 @@ func init() {
                   </a:ReferenceProperties>
                 </e:EndTo>
                 <e:Delivery Mode="http://schemas.dmtf.org/wbem/wsman/1/wsman/Events">
-                  <w:Heartbeats>PT900.000S</w:Heartbeats>
+                  <w:Heartbeats>{{.Heartbeats}}</w:Heartbeats>
                   <e:NotifyTo>
                     <a:Address>HTTPS://10.0.2.2:15986/wsman/subscriptions/36BEB691-AFE1-458F-A6B4-8B60037F9BEE/1</a:Address>
                     <a:ReferenceProperties>
@@ -232,7 +232,7 @@ func init() {
                     </c:Policy>
                   </e:NotifyTo>
                   <w:ConnectionRetry Total="5">PT60.0S</w:ConnectionRetry>
-                  <w:MaxTime>PT900.000S</w:MaxTime>
+                  <w:MaxTime>{{.MaxTime}}</w:MaxTime>
                   <w:MaxEnvelopeSize Policy="Notify">512000</w:MaxEnvelopeSize>
                   <w:Locale xml:lang="en-US" s:mustUnderstand="false" />
                   <p:DataLocale xml:lang="en-US" s:mustUnderstand="false" />
@@ -298,7 +298,12 @@ func (s *Server) subscriptionManager(w http.ResponseWriter, r *http.Request) {
 	switch env.Header.Action {
 	case wef.ActEnumerate:
 		w.Header().Add("Content-Type", "application/soap+xml;charset=UTF-8")
+
+		deliveryOptions := wef.DeliveryMinLatency
+
 		err = tmplSubscriptions.Execute(w, &Params{
+			Heartbeats:       deliveryOptions.Heartbeats.String(),
+			MaxTime:          deliveryOptions.MaxTime.String(),
 			OperationID:      env.Header.OperationID,
 			MessageID:        env.Header.MessageID,
 			IssuerThumbprint: "ca5f7ce0177d3c3bf61894013af35d97caec9e40",
@@ -318,6 +323,8 @@ func (s *Server) subscriptionManager(w http.ResponseWriter, r *http.Request) {
 }
 
 type Params struct {
+	Heartbeats       string
+	MaxTime          string
 	OperationID      string
 	MessageID        string
 	IssuerThumbprint string
@@ -357,7 +364,8 @@ func (s *Server) subscriptions(w http.ResponseWriter, r *http.Request) {
 				fmt.Printf("Failed to parse event: %s\n", err)
 				continue
 			}
-			fmt.Printf("Event %d: %#v\n", idx, e)
+			fmt.Printf("--- Event %d ----------------------------------\n", idx)
+			e.Dump()
 		}
 
 	default:
