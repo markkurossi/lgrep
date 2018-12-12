@@ -9,7 +9,12 @@
 package main
 
 import (
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
+	"fmt"
+	"io/ioutil"
 	"log"
 
 	"github.com/markkurossi/lgrep/datalog"
@@ -17,8 +22,9 @@ import (
 )
 
 func main() {
-	verbose := flag.Bool("v", false, "Verbose output")
-	init := flag.String("init", "", "Init file")
+	verbose := flag.Bool("v", false, "Verbose output.")
+	init := flag.String("init", "", "Init file.")
+	wef := flag.String("wef", "", "Start Windows Event Forwarding server.")
 	flag.Parse()
 
 	server := server.New(datalog.NewMemDB())
@@ -31,5 +37,54 @@ func main() {
 		}
 	}
 
+	if len(*wef) > 0 {
+		key, err := loadKey("wef")
+		if err != nil {
+			log.Fatalf("Failed to load private key: %s\n", err)
+		}
+		cert, certBytes, err := loadCert("wef")
+		if err != nil {
+			log.Fatalf("Failed to load certificate: %s\n", err)
+		}
+		config := &tls.Config{
+			Certificates: []tls.Certificate{
+				tls.Certificate{
+					Certificate: [][]byte{
+						certBytes,
+					},
+					PrivateKey: key,
+					Leaf:       cert,
+				},
+			},
+			VerifyPeerCertificate: func(rawCerts [][]byte, chains [][]*x509.Certificate) error {
+				fmt.Printf("chains: %v\n", chains)
+				return nil
+			},
+			InsecureSkipVerify: true,
+		}
+		config.BuildNameToCertificate()
+		go server.ServeWEF(*wef, config)
+	}
+
 	server.ServeSyslogUDP(":1514")
+}
+
+func loadKey(path string) (*rsa.PrivateKey, error) {
+	keyBytes, err := ioutil.ReadFile(fmt.Sprintf("%s.prv", path))
+	if err != nil {
+		return nil, err
+	}
+	return x509.ParsePKCS1PrivateKey(keyBytes)
+}
+
+func loadCert(path string) (*x509.Certificate, []byte, error) {
+	certBytes, err := ioutil.ReadFile(fmt.Sprintf("%s.crt", path))
+	if err != nil {
+		return nil, nil, err
+	}
+	cert, err := x509.ParseCertificate(certBytes)
+	if err != nil {
+		return nil, nil, err
+	}
+	return cert, certBytes, nil
 }

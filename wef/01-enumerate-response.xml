@@ -53,7 +53,7 @@ Content-Length: 10034
             <s:Body>
               <e:Subscribe>
                 <e:EndTo>
-                  <a:Address>HTTPS://ca.markkurossi.com:5986/wsman/subscriptions/36BEB691-AFE1-458F-A6B4-8B60037F9BEE/1</a:Address>
+                  <a:Address>HTTPS://10.0.2.2:15986/wsman/subscriptions/36BEB691-AFE1-458F-A6B4-8B60037F9BEE/1</a:Address>
                   <a:ReferenceProperties>
                     <e:Identifier>794B572A-0F96-46A6-8EFF-0F81EE927A05</e:Identifier>
                   </a:ReferenceProperties>
@@ -61,7 +61,7 @@ Content-Length: 10034
                 <e:Delivery Mode="http://schemas.dmtf.org/wbem/wsman/1/wsman/Events">
                   <w:Heartbeats>PT900.000S</w:Heartbeats>
                   <e:NotifyTo>
-                    <a:Address>HTTPS://ca.markkurossi.com:5986/wsman/subscriptions/36BEB691-AFE1-458F-A6B4-8B60037F9BEE/1</a:Address>
+                    <a:Address>HTTPS://10.0.2.2:15986/wsman/subscriptions/36BEB691-AFE1-458F-A6B4-8B60037F9BEE/1</a:Address>
                     <a:ReferenceProperties>
                       <e:Identifier>794B572A-0F96-46A6-8EFF-0F81EE927A05</e:Identifier>
                     </a:ReferenceProperties>
