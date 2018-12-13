@@ -9,6 +9,7 @@
 package datalog
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -126,6 +127,13 @@ ancestor(ebbon, john).
 ancestor(john, douglas).
 `,
 	},
+	test{
+		file: "selection.dl",
+		result: `
+ans(alpha, alpha, 1, 7).
+ans(beta, beta, 23, 10).
+`,
+	},
 }
 
 func TestData(t *testing.T) {
@@ -212,4 +220,48 @@ func (rs ResultSet) Equals(o ResultSet) bool {
 		}
 	}
 	return true
+}
+
+func BenchmarkEvalClique1000(b *testing.B) {
+	benchmarkEval(b, "test-data/clique1000.pl")
+}
+
+func BenchmarkEvalInduction1000(b *testing.B) {
+	benchmarkEval(b, "test-data/induction1000.pl")
+}
+
+func benchmarkEval(b *testing.B, file string) {
+	for i := 0; i < b.N; i++ {
+		f, err := os.Open(file)
+		if err != nil {
+			b.Errorf("Failed to open test file %s: %s", file, err)
+			return
+		}
+		defer f.Close()
+
+		parser := NewParser(file, f)
+		db := NewMemDB()
+		for {
+			clause, clauseType, err := parser.Parse()
+			if err != nil {
+				if err != io.EOF {
+					b.Errorf("Parse failed: %v", err)
+					return
+				}
+				break
+			}
+			switch clauseType {
+			case ClauseFact:
+				db.Add(clause)
+
+			case ClauseQuery:
+				result := Execute(clause.Head, db, nil)
+				if false {
+					for _, r := range result {
+						fmt.Printf("=> %s\n", r)
+					}
+				}
+			}
+		}
+	}
 }
