@@ -10,6 +10,7 @@ package wef
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Event struct {
@@ -41,6 +42,15 @@ func (e *Event) Dump() {
 		r.Add(ed.Name, ed.Value)
 	}
 
+	if e.RenderingInfo != nil {
+		r.Add("fmt.Level", e.RenderingInfo.Level)
+		r.Add("fmt.Task", e.RenderingInfo.Task)
+		r.Add("fmt.Opcode", e.RenderingInfo.Opcode)
+		r.Add("fmt.Channel", e.RenderingInfo.Channel)
+		r.Add("fmt.Provider", e.RenderingInfo.Provider)
+		r.Add("fmt.Keywords", e.RenderingInfo.Keywords)
+	}
+
 	var prefix = 0
 	for _, kv := range r.Data {
 		if len(kv.Key) > prefix {
@@ -66,6 +76,7 @@ type Report struct {
 }
 
 func (r *Report) Add(key, value string) {
+	value = strings.TrimSpace(value)
 	if len(key) == 0 || len(value) == 0 {
 		return
 	}
