@@ -239,7 +239,7 @@ func (table *Table) MakeID(atom *Atom) string {
 				nextSymbol++
 				vars[sym] = id
 			}
-			result += ",S"
+			result += "S"
 			result += strconv.Itoa(id)
 		} else {
 			// Constant.
@@ -249,7 +249,7 @@ func (table *Table) MakeID(atom *Atom) string {
 				table.nextStringID++
 				table.strings[term.String()] = id
 			}
-			result += ",s"
+			result += "s"
 			result += strconv.Itoa(id)
 		}
 	}
