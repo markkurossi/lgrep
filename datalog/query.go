@@ -81,7 +81,8 @@ func (q *Query) Search() {
 		if clause.IsFact() {
 			if q.atom.Unify(clause.Head, env) {
 				r := &Clause{
-					Head: q.atom.Clone().Substitute(env),
+					Timestamp: clause.Timestamp,
+					Head:      q.atom.Clone().Substitute(env),
 				}
 				if debug {
 					q.Printf("Fact: %s\n", r.Head)
@@ -167,7 +168,8 @@ func (q *Query) subQueryResult(head, atom *Atom, rest []*Atom,
 			// the bindings for the rule head.  Expand head with
 			// env and add to results.
 			r := &Clause{
-				Head: head.Clone().Substitute(env),
+				Timestamp: clause.Timestamp,
+				Head:      head.Clone().Substitute(env),
 			}
 			if debug {
 				q.Printf("Fact: %s, env=%s\n", r.Head, env)
