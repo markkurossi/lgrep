@@ -19,7 +19,6 @@ import (
 )
 
 type Server struct {
-	Verbose bool
 	DB      datalog.DB
 	Syslog  *syslog.Server
 	WEF     *wef.Server
@@ -38,6 +37,11 @@ func New(db datalog.DB) *Server {
 	server.Syslog = syslog.New(server)
 	server.WEF = wef.New(server)
 	return server
+}
+
+func (s *Server) Verbose(verbose bool) {
+	s.Syslog.Verbose = verbose
+	s.WEF.Verbose = verbose
 }
 
 func (s *Server) Add(clause *datalog.Clause) {

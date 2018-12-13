@@ -17,15 +17,15 @@ import (
 )
 
 type Server struct {
-	Verbose        bool
-	DB             datalog.DB
-	SyslogHandlers map[string]Handler
+	Verbose  bool
+	DB       datalog.DB
+	Handlers map[string]Handler
 }
 
 func New(db datalog.DB) *Server {
 	return &Server{
 		DB: db,
-		SyslogHandlers: map[string]Handler{
+		Handlers: map[string]Handler{
 			"sshd": SSHD,
 		},
 	}
@@ -56,7 +56,7 @@ func (s *Server) ServeUDP(address string) error {
 				hex.Dump(buf[:n]))
 			continue
 		}
-		fn, ok := s.SyslogHandlers[event.Ident]
+		fn, ok := s.Handlers[event.Ident]
 		if ok {
 			fn(event, s.DB, s.Verbose)
 		} else {

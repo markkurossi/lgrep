@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	server := server.New(datalog.NewMemDB())
-	server.Verbose = *verbose
+	server.Verbose(*verbose)
 
 	if len(*init) > 0 {
 		err := server.Eval(*init)
