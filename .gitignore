@@ -18,3 +18,7 @@ mem.prof
 # Binaries
 lgrep
 datalog/cli/cli
+
+# Keypairs.
+*.crt
+*.prv
