@@ -63,10 +63,10 @@ func main() {
 			InsecureSkipVerify: true,
 		}
 		config.BuildNameToCertificate()
-		go server.ServeWEF(*wef, config)
+		go server.WEF.ServeHTTPS(*wef, config)
 	}
 
-	server.ServeSyslogUDP(":1514")
+	server.Syslog.ServeUDP(":1514")
 }
 
 func loadKey(path string) (*rsa.PrivateKey, error) {

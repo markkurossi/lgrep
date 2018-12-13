@@ -11,6 +11,7 @@ package datalog
 type DB interface {
 	Add(clause *Clause)
 	Get(predicate Symbol, limits Predicates) []*Clause
+	Sync()
 }
 
 type MemDB struct {
@@ -40,4 +41,7 @@ func (db *MemDB) Get(predicate Symbol, limits Predicates) []*Clause {
 		}
 	}
 	return result
+}
+
+func (db *MemDB) Sync() {
 }
