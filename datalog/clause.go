@@ -92,7 +92,7 @@ func (c *Clause) Substitute(bindings *Bindings) {
 	}
 }
 
-type Predicates map[Symbol]int64
+type Predicates map[AtomID]int64
 
 func (p Predicates) String() string {
 	var str string
@@ -122,10 +122,10 @@ func (c *Clause) Predicates(db DB, flags Flags) Predicates {
 				if atom.Flags != flags {
 					continue
 				}
-				_, ok := result[atom.Predicate]
+				_, ok := result[atom.ID()]
 				if !ok {
-					result[atom.Predicate] = 0
-					cls := db.Get(atom.Predicate, nil)
+					result[atom.ID()] = 0
+					cls := db.Get(atom, nil)
 					if len(cls) > 0 {
 						newPending = append(newPending, cls[0])
 					}

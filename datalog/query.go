@@ -75,7 +75,7 @@ func (q *Query) Search() {
 		return
 	}
 
-	for _, clause := range q.db.Get(q.atom.Predicate, q.limits) {
+	for _, clause := range q.db.Get(q.atom, q.limits) {
 		env := q.bindings.Clone()
 
 		if clause.IsFact() {

@@ -25,11 +25,29 @@ type Atom struct {
 	Flags     Flags
 }
 
+type AtomID uint64
+
+func (id AtomID) String() string {
+	return fmt.Sprintf("%s/%d", id.Symbol(), id.Arity())
+}
+
+func (id AtomID) Symbol() Symbol {
+	return Symbol(id >> 32)
+}
+
+func (id AtomID) Arity() int {
+	return int(id & 0xffffffff)
+}
+
 func NewAtom(predicate Symbol, terms []Term) *Atom {
 	return &Atom{
 		Predicate: predicate,
 		Terms:     terms,
 	}
+}
+
+func (a *Atom) ID() AtomID {
+	return AtomID((uint64(a.Predicate) << 32) | uint64(len(a.Terms)))
 }
 
 func (a *Atom) String() string {

@@ -48,9 +48,9 @@ func (s *Server) Add(clause *datalog.Clause) {
 	s.DB.Add(clause)
 }
 
-func (s *Server) Get(predicate datalog.Symbol,
+func (s *Server) Get(atom *datalog.Atom,
 	limits datalog.Predicates) []*datalog.Clause {
-	return s.DB.Get(predicate, limits)
+	return s.DB.Get(atom, limits)
 }
 
 func (s *Server) Sync() {
@@ -87,7 +87,7 @@ func (s *Server) Eval(file string) error {
 	// Resolve all predicates, referenced by queries.
 	for _, q := range s.queries {
 		q.Predicates = q.Clause.Predicates(s.DB, 0)
-		if false {
+		if true {
 			fmt.Printf("%s => %s\n", q.Clause, q.Predicates)
 		}
 	}

@@ -137,7 +137,9 @@ func (s *Server) subscriptions(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprint(err), http.StatusBadRequest)
 		return
 	}
-	env.Dump(fmt.Sprintf("Subscription '%s'", r.URL.Path))
+	if s.Verbose {
+		env.Dump(fmt.Sprintf("Subscription '%s'", r.URL.Path))
+	}
 
 	switch env.Header.Action {
 	case ActHeartbeat, ActEnd, ActSubscriptionEnd:
@@ -150,9 +152,14 @@ func (s *Server) subscriptions(w http.ResponseWriter, r *http.Request) {
 				fmt.Printf("Failed to parse event: %s\n", err)
 				continue
 			}
-			fmt.Printf("--- Event %d ----------------------------------\n", idx)
-			e.Dump()
+			if s.Verbose {
+				fmt.Printf("--- Event %d ----------------------------------\n",
+					idx)
+				e.Dump()
+			}
+			s.datalog(e)
 		}
+		s.DB.Sync()
 
 	default:
 		fmt.Printf("Unhandled action: %s\n", env.Header.Action)
