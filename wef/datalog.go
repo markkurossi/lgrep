@@ -10,9 +10,12 @@ package wef
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/markkurossi/lgrep/datalog"
 )
+
+var SystemTimeFormat = "2006-01-02T15:04:05.9999999Z07:00"
 
 func (s *Server) datalog(e *Event) {
 	var terms []datalog.Term
@@ -39,8 +42,14 @@ func (s *Server) datalog(e *Event) {
 	terms = append(terms, shared(fmtOpcode, false))
 	terms = append(terms, constant(e.System.Keywords, false))
 
-	// XXX parse and store as int
-	terms = append(terms, constant(e.System.TimeCreated.SystemTime, true))
+	t, err := time.Parse(SystemTimeFormat, e.System.TimeCreated.SystemTime)
+	if err != nil {
+		fmt.Printf("Failed to parse time '%s': %s\n",
+			e.System.TimeCreated.SystemTime, err)
+		terms = append(terms, constant(e.System.TimeCreated.SystemTime, true))
+	} else {
+		terms = append(terms, constant(fmt.Sprintf("%d", t.UnixNano()), false))
+	}
 
 	terms = append(terms, constant(e.System.EventRecordID, false))
 	terms = append(terms, shared(e.System.Channel, false))
