@@ -13,14 +13,17 @@ type TermType int
 const (
 	Variable TermType = iota
 	Constant
+	Expression
 )
 
 type Term interface {
 	Type() TermType
 	Variable() Symbol
 	Rename(env *Bindings)
+	Substitute(env *Bindings) Term
 	Unify(t Term, env *Bindings) bool
 	Equals(t Term) bool
+	Clone() Term
 	String() string
 }
 
@@ -46,6 +49,10 @@ func (t *TermVariable) Rename(env *Bindings) {
 	if !env.Contains(t.Symbol) {
 		env.Bind(t.Symbol, NewTermVariable(newUniqueSymbol()))
 	}
+}
+
+func (t *TermVariable) Substitute(env *Bindings) Term {
+	return env.Map(t)
 }
 
 func (t *TermVariable) Unify(other Term, env *Bindings) bool {
@@ -91,6 +98,10 @@ func (t *TermVariable) Equals(other Term) bool {
 	return false
 }
 
+func (t *TermVariable) Clone() Term {
+	return t
+}
+
 func (t *TermVariable) String() string {
 	return t.Symbol.String()
 }
@@ -116,6 +127,10 @@ func (t *TermConstant) Variable() Symbol {
 }
 
 func (t *TermConstant) Rename(env *Bindings) {
+}
+
+func (t *TermConstant) Substitute(env *Bindings) Term {
+	return t
 }
 
 func (t *TermConstant) Unify(other Term, env *Bindings) bool {
@@ -147,8 +162,11 @@ func (t *TermConstant) Equals(other Term) bool {
 	case *TermConstant:
 		return t.Value == o.Value
 	}
-
 	return false
+}
+
+func (t *TermConstant) Clone() Term {
+	return t
 }
 
 func (t *TermConstant) String() string {
@@ -157,4 +175,56 @@ func (t *TermConstant) String() string {
 	} else {
 		return t.Value
 	}
+}
+
+type TermExpression struct {
+	Expr *Expr
+}
+
+func NewTermExpression(expr *Expr) Term {
+	return &TermExpression{
+		Expr: expr,
+	}
+}
+
+func (t *TermExpression) Type() TermType {
+	return Expression
+}
+
+func (t *TermExpression) Variable() Symbol {
+	return SymNil
+}
+
+func (t *TermExpression) Rename(env *Bindings) {
+	t.Expr.Rename(env)
+}
+
+func (t *TermExpression) Substitute(env *Bindings) Term {
+	t.Expr.Substitute(env)
+	return t
+}
+
+func (t *TermExpression) Unify(other Term, env *Bindings) bool {
+	val, err := t.Expr.Eval(env)
+	if err != nil {
+		return false
+	}
+
+	return val.Unify(other, env)
+}
+
+func (t *TermExpression) Equals(other Term) bool {
+	switch o := other.(type) {
+	case *TermExpression:
+		return t.Expr.Equals(o.Expr)
+	}
+	return false
+}
+
+func (t *TermExpression) Clone() Term {
+	return NewTermExpression(t.Expr.Clone())
+}
+
+func (t *TermExpression) String() string {
+	return t.Expr.String()
 }

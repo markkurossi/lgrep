@@ -10,7 +10,6 @@ package datalog
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type Flags int
@@ -52,7 +51,7 @@ func (a *Atom) ID() AtomID {
 
 func (a *Atom) String() string {
 	if a.Predicate.IsExpr() {
-		return fmt.Sprintf("%s %s %s", a.Terms[0], a.Predicate, a.Terms[1])
+		return a.Terms[0].String()
 	}
 
 	str := a.Predicate.String()
@@ -144,7 +143,7 @@ func (a *Atom) Clone() *Atom {
 		Flags:     a.Flags,
 	}
 	for i, term := range a.Terms {
-		n.Terms[i] = term
+		n.Terms[i] = term.Clone()
 	}
 	return n
 }
@@ -153,45 +152,7 @@ func (a *Atom) Clone() *Atom {
 // the modified atom.
 func (a *Atom) Substitute(env *Bindings) *Atom {
 	for i, term := range a.Terms {
-		a.Terms[i] = env.Map(term)
+		a.Terms[i] = term.Substitute(env)
 	}
 	return a
-}
-
-func (a *Atom) Eval(env *Bindings) bool {
-	if len(a.Terms) != 2 {
-		return false
-	}
-
-	switch a.Predicate {
-	case SymEQ:
-		return a.Terms[0].Unify(a.Terms[1], env)
-
-	case SymGE, SymGT, SymLE, SymLT:
-		v1, err := strconv.Atoi(env.Map(a.Terms[0]).String())
-		if err != nil {
-			fmt.Printf("%s: %s\n", a.Predicate, err)
-			return false
-		}
-		v2, err := strconv.Atoi(env.Map(a.Terms[1]).String())
-		if err != nil {
-			fmt.Printf(">: %s\n", err)
-			return false
-		}
-		switch a.Predicate {
-		case SymGT:
-			return v1 > v2
-		case SymGE:
-			return v1 >= v2
-		case SymLE:
-			return v1 <= v2
-		case SymLT:
-			return v1 < v2
-		default:
-			return false
-		}
-
-	default:
-		return false
-	}
 }

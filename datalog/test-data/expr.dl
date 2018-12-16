@@ -1,0 +1,15 @@
+
+unix-event(1544705958, "Unix", 42).
+windows-event(1544770553091488100, "Windows", 42).
+
+
+mismatch(ID) :-
+    unix-event(TimeUnix, _, ID),
+    windows-event(TimeWindows, _, ID),
+    TimeWindows / 1000000000 + 300 < TimeUnix.
+mismatch(ID) :-
+    unix-event(TimeUnix, _, ID),
+    windows-event(TimeWindows, _, ID),
+    TimeWindows / 1000000000 - 300 > TimeUnix.
+
+mismatch(ID)?

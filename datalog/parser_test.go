@@ -30,7 +30,7 @@ func TestClause(t *testing.T) {
 
 		c1, _, err := parser.Parse()
 		if err != nil {
-			t.Fatalf("Clause1: %s", err)
+			t.Fatalf("Clause1: %s\nInput: %s\n", err, data)
 		}
 
 		c2, _, err := parser.Parse()

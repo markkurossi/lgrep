@@ -29,34 +29,20 @@ var (
 
 const (
 	SymNil Symbol = iota
-	SymEQ
-	SymGE
-	SymGT
-	SymLE
-	SymLT
+	SymExpr
 	SymFirstIntern
 )
 
 func (s Symbol) IsExpr() bool {
-	return s != SymNil && s < SymFirstIntern
+	return s == SymExpr
 }
 
 func (s Symbol) String() string {
-	if s.IsExpr() {
-		switch s {
-		case SymEQ:
-			return "="
-		case SymGE:
-			return ">="
-		case SymGT:
-			return ">"
-		case SymLE:
-			return "<="
-		case SymLT:
-			return "<"
-		default:
-			return fmt.Sprintf("{expr %d}", s)
-		}
+	switch s {
+	case SymNil:
+		return "{nil}"
+	case SymExpr:
+		return "{expression}"
 	}
 
 	m.Lock()

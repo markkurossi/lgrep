@@ -134,6 +134,10 @@ ans(alpha, alpha, 1, 7).
 ans(beta, beta, 23, 10).
 `,
 	},
+	test{
+		file:   "expr.dl",
+		result: `mismatch(42).`,
+	},
 }
 
 func TestData(t *testing.T) {
@@ -166,11 +170,12 @@ func TestData(t *testing.T) {
 				result = Execute(clause.Head, db, nil)
 				expected := parseString(t, test.result)
 				if len(result) != len(expected) {
-					t.Errorf("Unexpected number of results: %d vs. %d\n",
-						len(result), len(expected))
+					t.Errorf("%s: Unexpected number of results: %d vs. %d\n",
+						test.file, len(result), len(expected))
 				}
 				if !result.Equals(expected) {
-					t.Errorf("Unexpected result %s vs. %s\n", result, expected)
+					t.Errorf("%s: Unexpected result %s vs. %s\n",
+						test.file, result, expected)
 				}
 			}
 		}

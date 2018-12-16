@@ -50,7 +50,7 @@ func (env *Bindings) Clone() *Bindings {
 }
 
 // Map maps the argument term to its current binding in the
-// environment. The function returns the mapped value of the argument
+// environment. The function returns the mapped value or the argument
 // term if the environment does not have a mapping for the term.
 func (env *Bindings) Map(term Term) Term {
 	sym := term.Variable()

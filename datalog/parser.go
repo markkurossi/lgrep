@@ -116,11 +116,11 @@ func (p *Parser) parseAtom() (*Atom, error) {
 		return nil, err
 	}
 	if next.IsExpr() {
-		_, err = p.getToken()
+		expr, err := p.parseExpr(token)
 		if err != nil {
 			return nil, err
 		}
-		return p.parseExpr(token, next)
+		return NewAtom(SymExpr, []Term{NewTermExpression(expr)}), nil
 	}
 
 	if token.Type != TokenIdentifier && token.Type != TokenString {
@@ -202,39 +202,176 @@ func (p *Parser) parseAtom() (*Atom, error) {
 	return atom, nil
 }
 
-func (p *Parser) parseExpr(left *Token, op TokenType) (*Atom, error) {
+func (p *Parser) parseExpr(left *Token) (*Expr, error) {
+	expr1, err := p.parseComparison(left)
+	if err != nil {
+		return nil, err
+	}
+	next, err := p.peekToken()
+	if err != nil {
+		return nil, err
+	}
+	if next != TokenEQ {
+		return expr1, nil
+	}
+	_, err = p.getToken()
+	if err != nil {
+		return nil, err
+	}
 	right, err := p.getToken()
 	if err != nil {
 		return nil, err
 	}
-	lTerm, err := p.makeExprTerm(left)
+	expr2, err := p.parseExpr(right)
 	if err != nil {
 		return nil, err
 	}
-	rTerm, err := p.makeExprTerm(right)
-	if err != nil {
-		return nil, err
-	}
-	predicate, err := op.Symbol()
-	if err != nil {
-		return nil, err
-	}
-	return &Atom{
-		Predicate: predicate,
-		Terms:     []Term{lTerm, rTerm},
+	return &Expr{
+		Type:  ExprEQ,
+		Left:  expr1,
+		Right: expr2,
 	}, nil
 }
 
-func (p *Parser) makeExprTerm(token *Token) (Term, error) {
+func (p *Parser) parseComparison(left *Token) (*Expr, error) {
+	expr1, err := p.parseAdditive(left)
+	if err != nil {
+		return nil, err
+	}
+	next, err := p.peekToken()
+	if err != nil {
+		return nil, err
+	}
+	var exprType ExprType
+	switch next {
+	case TokenGE:
+		exprType = ExprGE
+
+	case TokenGT:
+		exprType = ExprGT
+
+	case TokenLE:
+		exprType = ExprLE
+
+	case TokenLT:
+		exprType = ExprLT
+
+	default:
+		return expr1, nil
+	}
+	_, err = p.getToken()
+	if err != nil {
+		return nil, err
+	}
+	right, err := p.getToken()
+	if err != nil {
+		return nil, err
+	}
+	expr2, err := p.parseComparison(right)
+	if err != nil {
+		return nil, err
+	}
+	return &Expr{
+		Type:  exprType,
+		Left:  expr1,
+		Right: expr2,
+	}, nil
+}
+
+func (p *Parser) parseAdditive(left *Token) (*Expr, error) {
+	expr1, err := p.parseMultiplicative(left)
+	if err != nil {
+		return nil, err
+	}
+	next, err := p.peekToken()
+	if err != nil {
+		return nil, err
+	}
+	var exprType ExprType
+	switch next {
+	case TokenPlus:
+		exprType = ExprPlus
+
+	case TokenMinus:
+		exprType = ExprMinus
+
+	default:
+		return expr1, nil
+	}
+	_, err = p.getToken()
+	if err != nil {
+		return nil, err
+	}
+	right, err := p.getToken()
+	if err != nil {
+		return nil, err
+	}
+	expr2, err := p.parseAdditive(right)
+	if err != nil {
+		return nil, err
+	}
+	return &Expr{
+		Type:  exprType,
+		Left:  expr1,
+		Right: expr2,
+	}, nil
+}
+
+func (p *Parser) parseMultiplicative(left *Token) (*Expr, error) {
+	expr1, err := p.parseLiterals(left)
+	if err != nil {
+		return nil, err
+	}
+	next, err := p.peekToken()
+	if err != nil {
+		return nil, err
+	}
+	var exprType ExprType
+	switch next {
+	case TokenMul:
+		exprType = ExprMul
+
+	case TokenDiv:
+		exprType = ExprDiv
+
+	default:
+		return expr1, nil
+	}
+	_, err = p.getToken()
+	if err != nil {
+		return nil, err
+	}
+	right, err := p.getToken()
+	if err != nil {
+		return nil, err
+	}
+	expr2, err := p.parseMultiplicative(right)
+	if err != nil {
+		return nil, err
+	}
+	return &Expr{
+		Type:  exprType,
+		Left:  expr1,
+		Right: expr2,
+	}, nil
+}
+
+func (p *Parser) parseLiterals(token *Token) (*Expr, error) {
 	switch token.Type {
 	case TokenVariable:
 		symbol, _ := Intern(token.Value, false)
-		return NewTermVariable(symbol), nil
+		return &Expr{
+			Type:  ExprVariable,
+			Value: NewTermVariable(symbol),
+		}, nil
 
 	case TokenIdentifier, TokenString:
-		return NewTermConstant(token.Value, token.Type == TokenString), nil
+		return &Expr{
+			Type:  ExprConstant,
+			Value: NewTermConstant(token.Value, token.Type == TokenString),
+		}, nil
 
 	default:
-		return nil, fmt.Errorf("Invalid expression element %s", token)
+		return nil, fmt.Errorf("Invalid literal type %s", token)
 	}
 }

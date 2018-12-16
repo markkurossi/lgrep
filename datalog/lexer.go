@@ -125,6 +125,30 @@ func (l *Lexer) GetToken() (*Token, error) {
 				Position: *l.last,
 			}, nil
 
+		case '*':
+			return &Token{
+				Type:     TokenMul,
+				Position: *l.last,
+			}, nil
+
+		case '/':
+			return &Token{
+				Type:     TokenDiv,
+				Position: *l.last,
+			}, nil
+
+		case '+':
+			return &Token{
+				Type:     TokenPlus,
+				Position: *l.last,
+			}, nil
+
+		case '-':
+			return &Token{
+				Type:     TokenMinus,
+				Position: *l.last,
+			}, nil
+
 		case '(', ',', ')', '.', '~', '?':
 			return &Token{
 				Type:     TokenType(r),
@@ -328,6 +352,10 @@ const (
 	TokenGT
 	TokenLE
 	TokenLT
+	TokenMul
+	TokenDiv
+	TokenPlus
+	TokenMinus
 	TokenError
 	TokenVariable
 	TokenIdentifier
@@ -336,27 +364,11 @@ const (
 
 func (t TokenType) IsExpr() bool {
 	switch t {
-	case TokenEQ, TokenGE, TokenGT, TokenLE, TokenLT:
+	case TokenEQ, TokenGE, TokenGT, TokenLE, TokenLT, TokenMul, TokenDiv,
+		TokenPlus, TokenMinus:
 		return true
 	default:
 		return false
-	}
-}
-
-func (t TokenType) Symbol() (Symbol, error) {
-	switch t {
-	case TokenEQ:
-		return SymEQ, nil
-	case TokenGE:
-		return SymGE, nil
-	case TokenGT:
-		return SymGT, nil
-	case TokenLE:
-		return SymLE, nil
-	case TokenLT:
-		return SymLT, nil
-	default:
-		return SymNil, fmt.Errorf("No symbol for token type %d", t)
 	}
 }
 
@@ -374,6 +386,10 @@ var tokenNames = map[TokenType]string{
 	TokenGT:       ">",
 	TokenLE:       "<=",
 	TokenLT:       "<",
+	TokenMul:      "*",
+	TokenDiv:      "/",
+	TokenPlus:     "+",
+	TokenMinus:    "-",
 	TokenError:    "{error}",
 }
 

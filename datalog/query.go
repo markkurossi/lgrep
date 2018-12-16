@@ -130,8 +130,11 @@ func (q *Query) rule(head, atom *Atom, rest []*Atom, bindings *Bindings) {
 	if debug {
 		q.Printf("<Rule %s :- %s,%v\n", head, atom, rest)
 	}
-	if atom.Predicate < SymFirstIntern {
-		if atom.Eval(bindings) {
+	if atom.Predicate.IsExpr() {
+		// XXX Move eval to term interface methods.
+		expr := atom.Terms[0].(*TermExpression)
+		_, err := expr.Expr.Eval(bindings)
+		if err == nil {
 			q.exprResult(head, atom, rest, bindings)
 		}
 	} else {
