@@ -1,5 +1,8 @@
 = LGrep - Syslog Collector and Analyzer
 
+LGrep implements syslog and Windows Event Forwarding (WEF) collectors,
+feeding data to Datalog analysis engine.
+
 == Configure Remote System Logging with Rsyslog
 
 === Ubuntu
