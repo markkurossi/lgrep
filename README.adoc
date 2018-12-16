@@ -38,16 +38,13 @@ Open `Local Group Policy Editor` and navigate to:
 
 Open `Configure target Subscription Manager`:
 
-. Check `Enabled
+. Check `Enabled`
 . Open `SubscriptionManagers` with the `Show...` button
 . Configure target subscription manager with the value:
 
     Server=https://<FQDN/IP of collector>:5986/wsman/SubscriptionManager/WEC,Refresh=<seconds>,IssuerCA=<Thumbprint of the CA issuing TLS client authentication certificate>
 
     winrm qc -transport:https
-
-
-
 
 == TODO
 
