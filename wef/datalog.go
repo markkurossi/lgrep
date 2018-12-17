@@ -35,11 +35,11 @@ func (s *Server) datalog(e *Event) {
 	terms = append(terms, constant(e.System.EventID, false))
 	terms = append(terms, shared(e.System.Version, false))
 	terms = append(terms, shared(e.System.Level, false))
-	terms = append(terms, shared(fmtLevel, false))
+	terms = append(terms, shared(fmtLevel, true))
 	terms = append(terms, constant(e.System.Task, false))
 	terms = append(terms, constant(fmtTask, true))
 	terms = append(terms, shared(e.System.Opcode, false))
-	terms = append(terms, shared(fmtOpcode, false))
+	terms = append(terms, shared(fmtOpcode, true))
 	terms = append(terms, constant(e.System.Keywords, false))
 
 	t, err := time.Parse(SystemTimeFormat, e.System.TimeCreated.SystemTime)
