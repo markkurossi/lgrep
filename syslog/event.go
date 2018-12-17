@@ -94,7 +94,7 @@ func (f Facility) String() string {
 	if ok {
 		return name
 	}
-	return fmt.Sprintf("facility-%d", f)
+	return fmt.Sprintf("facility_%d", f)
 }
 
 type Severity int
@@ -126,7 +126,7 @@ func (s Severity) String() string {
 	if ok {
 		return name
 	}
-	return fmt.Sprintf("severity-%d", s)
+	return fmt.Sprintf("severity_%d", s)
 }
 
 func Parse(data []byte) (*Event, error) {

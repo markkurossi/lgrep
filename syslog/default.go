@@ -19,7 +19,7 @@ func Default(e *Event, db datalog.DB, verbose bool) {
 	if len(e.Ident) > 0 {
 		predicate = e.Ident
 	} else {
-		predicate = "syslog-event"
+		predicate = "syslog_event"
 	}
 
 	terms := EventTerms(e)
