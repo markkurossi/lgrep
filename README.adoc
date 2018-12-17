@@ -27,7 +27,7 @@ Restart the rsyslog service:
 
 == Configure Remote System Logging with Windows Log Forwading
 
-Open `Local Group Policy Editor` and navigate to:
+Open `Local Group Policy Editor` (`gpedit.msc`) and navigate to:
 
     Local Computer Policy
     |
