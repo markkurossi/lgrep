@@ -21,6 +21,11 @@ type match struct {
 }
 
 var matches = []match{
+	// Server listening on 0.0.0.0 port 22.
+	match{
+		P: "sshd_listening",
+		R: regexp.MustCompile(`^Server listening on (\S+) port (\d+).`),
+	},
 	// Connection from 10.0.2.2 port 56821 on 10.0.2.15 port 22
 	match{
 		P: "sshd_connection",
