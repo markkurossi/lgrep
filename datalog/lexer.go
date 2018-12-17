@@ -331,7 +331,7 @@ func (l *Lexer) readIdentifier(r rune) (*Token, error) {
 
 func isIdentifierRune(r rune) bool {
 	switch r {
-	case '(', ',', ')', ':', '.', '~', '?', '"', '%':
+	case '(', ',', ')', ':', '.', '~', '?', '"', '%', '*', '/', '-':
 		return false
 
 	default:

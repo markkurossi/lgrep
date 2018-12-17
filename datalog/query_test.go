@@ -138,6 +138,22 @@ ans(beta, beta, 23, 10).
 		file:   "expr.dl",
 		result: `mismatch(42).`,
 	},
+	test{
+		file:   "expr-add.dl",
+		result: `add(100,50,150).`,
+	},
+	test{
+		file:   "expr-sub.dl",
+		result: `sub(100,50,50).`,
+	},
+	test{
+		file:   "expr-mul.dl",
+		result: `mul(100,50,5000).`,
+	},
+	test{
+		file:   "expr-div.dl",
+		result: `div(100,50,2).`,
+	},
 }
 
 func TestData(t *testing.T) {
