@@ -51,5 +51,6 @@ Open `Configure target Subscription Manager`:
 
 == TODO
 
+
 https://docs.microsoft.com/en-us/windows/desktop/wec/setting-up-a-source-initiated-subscription
 https://github.com/nsacyber/Event-Forwarding-Guidance/tree/master/Subscriptions/samples
