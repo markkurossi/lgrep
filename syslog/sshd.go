@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/datalog"
 )
 
 type match struct {

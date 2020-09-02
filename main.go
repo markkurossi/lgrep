@@ -17,7 +17,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/datalog"
 	"github.com/markkurossi/lgrep/server"
 )
 

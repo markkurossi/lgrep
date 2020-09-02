@@ -13,7 +13,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/datalog"
 	"github.com/markkurossi/lgrep/syslog"
 	"github.com/markkurossi/lgrep/wef"
 )

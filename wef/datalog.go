@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/datalog"
 )
 
 // SystemTimeFormat defines the WEF system time format.

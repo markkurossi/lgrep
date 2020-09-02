@@ -1,6 +1,0 @@
-"sshd-connection"(security, info, 1542963737, "authorizer", "sshd", 5339, "Connection from 10.0.2.2 port 60668 on 10.0.2.15 port 22", "10.0.2.2", "60668", "10.0.2.15", "22").
-"sshd-postponed-pubkey"(security, info, 1542963737, "authorizer", "sshd", 5339, "Postponed publickey for mtr from 10.0.2.2 port 60668 ssh2 [preauth]", "mtr", "10.0.2.2", "60668").
-sshd-auth-pubkey(security, info, 1542963737, "authorizer", "sshd", 5339, "Accepted publickey for mtr from 10.0.2.2 port 60668 ssh2: RSA SHA256:R9D+G/DQmxLICfKYEoGTzKmgc48XLOa3iD6Fa4ecneY", "mtr", "10.0.2.2", "60668", "RSA", "SHA256:R9D+G/DQmxLICfKYEoGTzKmgc48XLOa3iD6Fa4ecneY").
-"sshd-session-open"(security, info, 1542963737, "authorizer", "sshd", 5339, "pam_unix(sshd:session): session opened for user mtr by (uid=0)", "mtr", "0").
-sshd-user-child-pid(security, info, 1542963737, "authorizer", "sshd", 5339, "User child is on pid 5369", "5369").
-sshd-start-session(security, info, 1542963737, "authorizer", "sshd", 5369, "Starting session: shell on pts/8 for mtr from 10.0.2.2 port 60668 id 0", "shell on pts/8", "mtr", "10.0.2.2", "60668", "0").

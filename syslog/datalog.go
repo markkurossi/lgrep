@@ -11,7 +11,7 @@ package syslog
 import (
 	"fmt"
 
-	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/datalog"
 )
 
 // EventTerms creates datalog terms from the syslog event.

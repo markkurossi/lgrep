@@ -9,7 +9,7 @@
 package syslog
 
 import (
-	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/datalog"
 )
 
 // Handler implements a syslog event handler.

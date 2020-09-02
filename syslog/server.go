@@ -13,7 +13,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/datalog"
 )
 
 // Server implements syslog server.

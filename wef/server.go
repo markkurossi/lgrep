@@ -23,7 +23,7 @@ import (
 	"text/template"
 	"unicode/utf16"
 
-	"github.com/markkurossi/lgrep/datalog"
+	"github.com/markkurossi/datalog"
 	"github.com/markkurossi/sldc"
 )
 
