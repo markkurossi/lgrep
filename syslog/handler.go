@@ -12,4 +12,5 @@ import (
 	"github.com/markkurossi/lgrep/datalog"
 )
 
+// Handler implements a syslog event handler.
 type Handler func(e *Event, db datalog.DB, verbose bool)

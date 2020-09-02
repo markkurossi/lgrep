@@ -16,12 +16,14 @@ import (
 	"github.com/markkurossi/lgrep/datalog"
 )
 
+// Server implements syslog server.
 type Server struct {
 	Verbose  bool
 	DB       datalog.DB
 	Handlers map[string]Handler
 }
 
+// New creates a new syslog server.
 func New(db datalog.DB) *Server {
 	return &Server{
 		DB: db,
@@ -31,6 +33,8 @@ func New(db datalog.DB) *Server {
 	}
 }
 
+// ServeUDP handles the UDP syslog events from the specified UDP
+// address.
 func (s *Server) ServeUDP(address string) error {
 	addr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {

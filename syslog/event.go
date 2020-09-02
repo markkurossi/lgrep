@@ -18,6 +18,7 @@ import (
 var reEvent = regexp.MustCompile(`^<(\d+)>([[:alpha:]]{3} [ 0-9]{2} \S+) (\S+) (.*)$`)
 var reIdent = regexp.MustCompile(`^([^[]+)\[([[:digit:]]+)\]:\s*(.*)$`)
 
+// Event implements syslog events.
 type Event struct {
 	Facility  Facility
 	Severity  Severity
@@ -33,8 +34,10 @@ func (e *Event) String() string {
 		e.Facility, e.Severity, e.Timestamp, e.Hostname, e.Message)
 }
 
+// Facility defines syslog event facilities.
 type Facility int
 
+// Known syslog event facilities.
 const (
 	Kernel Facility = iota
 	UserLevel
@@ -97,8 +100,10 @@ func (f Facility) String() string {
 	return fmt.Sprintf("facility_%d", f)
 }
 
+// Severity defines syslog event severities.
 type Severity int
 
+// Known syslog event severities.
 const (
 	Emergency Severity = iota
 	Alert
@@ -129,6 +134,7 @@ func (s Severity) String() string {
 	return fmt.Sprintf("severity_%d", s)
 }
 
+// Parse parses a syslog event.
 func Parse(data []byte) (*Event, error) {
 	m := reEvent.FindSubmatch(data)
 	if m == nil {

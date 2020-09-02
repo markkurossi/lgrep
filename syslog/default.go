@@ -14,6 +14,7 @@ import (
 	"github.com/markkurossi/lgrep/datalog"
 )
 
+// Default implements the default syslog event handler.
 func Default(e *Event, db datalog.DB, verbose bool) {
 	var predicate string
 	if len(e.Ident) > 0 {

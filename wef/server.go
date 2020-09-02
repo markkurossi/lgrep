@@ -27,17 +27,21 @@ import (
 	"github.com/markkurossi/sldc"
 )
 
+// Server implements WEF server.
 type Server struct {
 	Verbose bool
 	DB      datalog.DB
 }
 
+// New creates a new WEF server.
 func New(db datalog.DB) *Server {
 	return &Server{
 		DB: db,
 	}
 }
 
+// ServeHTTPS implements the WS-Management event collector HTTPS
+// server.
 func (s *Server) ServeHTTPS(addr string, tlsConfig *tls.Config) error {
 
 	http.HandleFunc("/wsman/SubscriptionManager/WEC",
@@ -108,6 +112,7 @@ func (s *Server) subscriptionManager(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Params define the WS-Management parameters.
 type Params struct {
 	Heartbeats       string
 	MaxTime          string

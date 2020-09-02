@@ -15,6 +15,7 @@ import (
 	"github.com/markkurossi/lgrep/datalog"
 )
 
+// SystemTimeFormat defines the WEF system time format.
 var SystemTimeFormat = "2006-01-02T15:04:05.9999999Z07:00"
 
 func (s *Server) datalog(e *Event) {

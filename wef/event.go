@@ -13,12 +13,14 @@ import (
 	"strings"
 )
 
+// Event implements WEF events.
 type Event struct {
 	System        System
 	EventData     []EventData `xml:"EventData>Data"`
 	RenderingInfo *RenderingInfo
 }
 
+// Dump prints WEF event.
 func (e *Event) Dump() {
 	r := &Report{}
 
@@ -71,10 +73,12 @@ func (e *Event) Dump() {
 	}
 }
 
+// Report implements key-value data formatting.
 type Report struct {
 	Data []KeyValue
 }
 
+// Add adds a key-value pair to the report.
 func (r *Report) Add(key, value string) {
 	value = strings.TrimSpace(value)
 	if len(key) == 0 || len(value) == 0 {
@@ -86,11 +90,13 @@ func (r *Report) Add(key, value string) {
 	})
 }
 
+// KeyValue defines a key-value pair.
 type KeyValue struct {
 	Key string
 	Val string
 }
 
+// System defines event system information.
 type System struct {
 	Provider      Provider
 	EventID       string
@@ -108,33 +114,40 @@ type System struct {
 	Security      *Security
 }
 
+// Provider defines event provider information.
 type Provider struct {
 	Name string `xml:"Name,attr"`
-	Guid string `xml:"Guid,attr"`
+	GUID string `xml:"Guid,attr"`
 }
 
+// TimeCreated defines event creation time.
 type TimeCreated struct {
 	SystemTime string `xml:",attr"`
 }
 
+// Correlation defines event correlation information.
 type Correlation struct {
 	ActivityID string `xml:",attr"`
 }
 
+// Execution defines event execution information.
 type Execution struct {
 	ProcessID string `xml:"ProcessID,attr"`
 	ThreadID  string `xml:"ThreadID,attr"`
 }
 
+// Security defines event security information.
 type Security struct {
 	UserID string `xml:",attr"`
 }
 
+// EventData defines event key-value data.
 type EventData struct {
 	Name  string `xml:",attr"`
 	Value string `xml:",innerxml"`
 }
 
+// RenderingInfo defines event rendering information.
 type RenderingInfo struct {
 	Message  string
 	Level    string

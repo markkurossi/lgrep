@@ -14,6 +14,7 @@ import (
 	"github.com/markkurossi/lgrep/datalog"
 )
 
+// EventTerms creates datalog terms from the syslog event.
 func EventTerms(e *Event) []datalog.Term {
 	var terms []datalog.Term
 

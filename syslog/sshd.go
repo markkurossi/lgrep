@@ -140,6 +140,7 @@ var matches = []match{
 	},
 }
 
+// SSHD implements the Handler interface for SSHD syslog events.
 func SSHD(e *Event, db datalog.DB, verbose bool) {
 	for _, matcher := range matches {
 		m := matcher.R.FindStringSubmatch(e.Message)

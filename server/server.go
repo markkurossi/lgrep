@@ -18,6 +18,7 @@ import (
 	"github.com/markkurossi/lgrep/wef"
 )
 
+// Server implements LGrep server.
 type Server struct {
 	DB      datalog.DB
 	Syslog  *syslog.Server
@@ -25,11 +26,13 @@ type Server struct {
 	queries []*Query
 }
 
+// Query implements queries that are matched against log entries.
 type Query struct {
 	Clause     *datalog.Clause
 	Predicates datalog.Predicates
 }
 
+// New creates a new server instance.
 func New(db datalog.DB) *Server {
 	server := &Server{
 		DB: db,
@@ -39,24 +42,32 @@ func New(db datalog.DB) *Server {
 	return server
 }
 
+// Verbose sets the verbose output flag.
 func (s *Server) Verbose(verbose bool) {
 	s.Syslog.Verbose = verbose
 	s.WEF.Verbose = verbose
 }
 
+// Add adds a clause to the server's clause database.
 func (s *Server) Add(clause *datalog.Clause) {
 	s.DB.Add(clause)
 }
 
+// Get gets the clauses from the server's clause database. The limits
+// specify the query limits.
 func (s *Server) Get(atom *datalog.Atom,
 	limits datalog.Predicates) []*datalog.Clause {
 	return s.DB.Get(atom, limits)
 }
 
+// Sync executes the queries against the new log entries.
 func (s *Server) Sync() {
 	s.executeQueries()
 }
 
+// Eval evaluates the argument file. The facts are added to the
+// server's clause database, queries are executed against the
+// database.
 func (s *Server) Eval(file string) error {
 	f, err := os.Open(file)
 	if err != nil {
