@@ -28,6 +28,7 @@ const debug bool = false
 // - Intensional database predicates (IDB) – derived tables
 //
 
+// Execute executes a datalog query on the data, limited by limits.
 func Execute(q *Atom, db DB, limits Predicates) []*Clause {
 	query := &Query{
 		atom:     q,
@@ -40,6 +41,7 @@ func Execute(q *Atom, db DB, limits Predicates) []*Clause {
 	return query.result
 }
 
+// Query implements a datalog query.
 type Query struct {
 	atom           *Atom
 	db             DB
@@ -54,6 +56,7 @@ type Query struct {
 	parentBindings *Bindings
 }
 
+// Printf prints the formatted message, indented by the query level.
 func (q *Query) Printf(format string, a ...interface{}) {
 	for i := 0; i < q.level*4; i++ {
 		fmt.Print(" ")
@@ -61,10 +64,12 @@ func (q *Query) Printf(format string, a ...interface{}) {
 	fmt.Printf(format, a...)
 }
 
+// Equals tests if the queries are equal.
 func (q *Query) Equals(o *Query) bool {
 	return q.atom.Equals(o.atom)
 }
 
+// Search executes the query.
 func (q *Query) Search() {
 	if debug {
 		q.Printf("Search %s\n", q.atom)
@@ -213,6 +218,7 @@ func (q *Query) addResult(result *Clause) {
 	q.result = append(q.result, result)
 }
 
+// NewTable creates a new table for remembered queries.
 func NewTable() *Table {
 	return &Table{
 		strings: make(map[string]int),
@@ -220,12 +226,14 @@ func NewTable() *Table {
 	}
 }
 
+// Table implements remembered queries.
 type Table struct {
 	strings      map[string]int
 	nextStringID int
 	entries      map[string]*TableEntry
 }
 
+// MakeID creates an unique ID for the atom.
 func (table *Table) MakeID(atom *Atom) string {
 
 	var nextSymbol = 0
@@ -259,6 +267,7 @@ func (table *Table) MakeID(atom *Atom) string {
 	return result
 }
 
+// Add adds a query to remembered queries.
 func (table *Table) Add(q *Query) (bool, *TableEntry) {
 	id := table.MakeID(q.atom)
 	entry, ok := table.entries[id]
@@ -273,6 +282,7 @@ func (table *Table) Add(q *Query) (bool, *TableEntry) {
 	return false, entry
 }
 
+// TableEntry implements remembered queries.
 type TableEntry struct {
 	q       *Query
 	waiters []*Query

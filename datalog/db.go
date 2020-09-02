@@ -8,22 +8,26 @@
 
 package datalog
 
+// DB defines the clause storage interface.
 type DB interface {
 	Add(clause *Clause)
 	Get(atom *Atom, limits Predicates) []*Clause
 	Sync()
 }
 
+// MemDB implements the memory DB storage.
 type MemDB struct {
 	clauses map[AtomID][]*Clause
 }
 
+// NewMemDB implements the DB interface with memory storage.
 func NewMemDB() DB {
 	return &MemDB{
 		clauses: make(map[AtomID][]*Clause),
 	}
 }
 
+// Add implements the DB.Add.
 func (db *MemDB) Add(clause *Clause) {
 	arr, ok := db.clauses[clause.Head.ID()]
 	if !ok {
@@ -33,6 +37,7 @@ func (db *MemDB) Add(clause *Clause) {
 	db.clauses[clause.Head.ID()] = arr
 }
 
+// Get implements the DB.Get.
 func (db *MemDB) Get(atom *Atom, limits Predicates) []*Clause {
 	var result []*Clause
 	for _, c := range db.clauses[atom.ID()] {
@@ -43,5 +48,6 @@ func (db *MemDB) Get(atom *Atom, limits Predicates) []*Clause {
 	return result
 }
 
+// Sync implements the DB.Sync.
 func (db *MemDB) Sync() {
 }

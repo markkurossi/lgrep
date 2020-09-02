@@ -13,11 +13,13 @@ import (
 	"io"
 )
 
+// Parser implements datalog parser.
 type Parser struct {
 	lexer *Lexer
 	ungot *Token
 }
 
+// NewParser creates a new datalog parser.
 func NewParser(inputName string, input io.Reader) *Parser {
 	return &Parser{
 		lexer: NewLexer(inputName, input),
@@ -46,6 +48,7 @@ func (p *Parser) peekToken() (TokenType, error) {
 	return t.Type, nil
 }
 
+// Parse parses a datalog clause.
 func (p *Parser) Parse() (clause *Clause, clauseType ClauseType, err error) {
 	var atom *Atom
 	atom, err = p.parseAtom()
@@ -170,6 +173,9 @@ func (p *Parser) parseAtom() (*Atom, error) {
 			atom.Terms = append(atom.Terms, term)
 
 			token, err = p.getToken()
+			if err != nil {
+				return nil, err
+			}
 			if token.Type == ')' {
 				break
 			}

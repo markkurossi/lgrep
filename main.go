@@ -48,7 +48,7 @@ func main() {
 		}
 		config := &tls.Config{
 			Certificates: []tls.Certificate{
-				tls.Certificate{
+				{
 					Certificate: [][]byte{
 						certBytes,
 					},

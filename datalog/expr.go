@@ -20,6 +20,7 @@ var (
 	errorDivideByZero = errors.New("divide by zero")
 )
 
+// Expr implements a datalog expression.
 type Expr struct {
 	Type  ExprType
 	Left  *Expr
@@ -27,8 +28,10 @@ type Expr struct {
 	Value Term
 }
 
+// ExprType defines the expression types.
 type ExprType int
 
+// Known expression types.
 const (
 	ExprConstant ExprType = iota
 	ExprVariable
@@ -65,6 +68,7 @@ func (t ExprType) String() string {
 	return fmt.Sprintf("{ExprType %d}", t)
 }
 
+// Rename renames the expression with the env bindings.
 func (e *Expr) Rename(env *Bindings) {
 	switch e.Type {
 	case ExprConstant:
@@ -76,6 +80,7 @@ func (e *Expr) Rename(env *Bindings) {
 	}
 }
 
+// Substitute substitutes the expression with the env bindings.
 func (e *Expr) Substitute(env *Bindings) {
 	switch e.Type {
 	case ExprConstant, ExprVariable:
@@ -86,6 +91,7 @@ func (e *Expr) Substitute(env *Bindings) {
 	}
 }
 
+// Eval evaluates the expression with the env bindings.
 func (e *Expr) Eval(env *Bindings) (Term, error) {
 	switch e.Type {
 	case ExprConstant, ExprVariable:
@@ -105,9 +111,8 @@ func (e *Expr) Eval(env *Bindings) (Term, error) {
 	case ExprEQ:
 		if left.Unify(right, env) {
 			return termTrue, nil
-		} else {
-			return nil, errorFalse
 		}
+		return nil, errorFalse
 	}
 
 	leftInt, err := strconv.ParseInt(left.String(), 10, 64)
@@ -123,30 +128,26 @@ func (e *Expr) Eval(env *Bindings) (Term, error) {
 	case ExprGE:
 		if leftInt >= rightInt {
 			return termTrue, nil
-		} else {
-			return nil, errorFalse
 		}
+		return nil, errorFalse
 
 	case ExprGT:
 		if leftInt > rightInt {
 			return termTrue, nil
-		} else {
-			return nil, errorFalse
 		}
+		return nil, errorFalse
 
 	case ExprLE:
 		if leftInt <= rightInt {
 			return termTrue, nil
-		} else {
-			return nil, errorFalse
 		}
+		return nil, errorFalse
 
 	case ExprLT:
 		if leftInt < rightInt {
 			return termTrue, nil
-		} else {
-			return nil, errorFalse
 		}
+		return nil, errorFalse
 
 	case ExprMul:
 		val := leftInt * rightInt
@@ -171,6 +172,7 @@ func (e *Expr) Eval(env *Bindings) (Term, error) {
 	return nil, fmt.Errorf("Invalid expression '%s'", e)
 }
 
+// Equals tests if the expressions are equal.
 func (e *Expr) Equals(o *Expr) bool {
 	if e.Type != o.Type {
 		return false
@@ -184,6 +186,7 @@ func (e *Expr) Equals(o *Expr) bool {
 	}
 }
 
+// Clone creates an independent copy of the expression.
 func (e *Expr) Clone() *Expr {
 	switch e.Type {
 	case ExprConstant, ExprVariable:

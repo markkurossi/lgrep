@@ -15,7 +15,7 @@ import (
 	"testing"
 )
 
-var input string = `
+var input = `
 % Facts
 parent(bill, mary).
 parent(mary, john).

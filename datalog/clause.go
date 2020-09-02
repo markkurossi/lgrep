@@ -13,16 +13,19 @@ import (
 	"time"
 )
 
+// Clause implements a datalog clause.
 type Clause struct {
 	Timestamp int64
 	Head      *Atom
 	Body      []*Atom
 }
 
+// IsFact tests if the clause is a fact.
 func (c *Clause) IsFact() bool {
 	return len(c.Body) == 0
 }
 
+// NewClause creates a new clause.
 func NewClause(head *Atom, body []*Atom) *Clause {
 	return &Clause{
 		Timestamp: time.Now().UnixNano(),
@@ -45,6 +48,7 @@ func (c *Clause) String() string {
 	return str
 }
 
+// Equals tests if the clauses are equal.
 func (c *Clause) Equals(o *Clause) bool {
 	mapping := make(map[Symbol]Symbol)
 
@@ -85,6 +89,7 @@ func (c *Clause) Rename() *Clause {
 	return clause
 }
 
+// Substitute substitutes the bindings in the clause.
 func (c *Clause) Substitute(bindings *Bindings) {
 	c.Head = c.Head.Substitute(bindings)
 	for i, atom := range c.Body {
@@ -92,6 +97,7 @@ func (c *Clause) Substitute(bindings *Bindings) {
 	}
 }
 
+// Predicates implement predicates with timestamps.
 type Predicates map[AtomID]int64
 
 func (p Predicates) String() string {
@@ -139,8 +145,10 @@ func (c *Clause) Predicates(db DB, flags Flags) Predicates {
 	return result
 }
 
+// ClauseType defines clause types.
 type ClauseType int
 
+// Known clause types.
 const (
 	ClauseError ClauseType = iota
 	ClauseFact

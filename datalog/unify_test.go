@@ -22,17 +22,17 @@ type UnifyTest struct {
 }
 
 var unifyTests = []UnifyTest{
-	UnifyTest{
+	{
 		A: "p1(X).",
 		B: "p2(Y).",
 		R: "",
 	},
-	UnifyTest{
+	{
 		A: "p(X,Y).",
 		B: "p(Y).",
 		R: "",
 	},
-	UnifyTest{
+	{
 		A: "p(X).",
 		B: "p(a).",
 		R: "p(a).",
@@ -40,7 +40,7 @@ var unifyTests = []UnifyTest{
 			"X": "a",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(a).",
 		B: "p(X).",
 		R: "p(a).",
@@ -48,12 +48,12 @@ var unifyTests = []UnifyTest{
 			"X": "a",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(a).",
 		B: "p(b).",
 		R: "",
 	},
-	UnifyTest{
+	{
 		A: "p(X).",
 		B: "p(Y).",
 		R: "p(X).",
@@ -61,7 +61,7 @@ var unifyTests = []UnifyTest{
 			"Y": "X",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(X,Y).",
 		B: "p(Q,W).",
 		R: "p(X,Y).",
@@ -70,7 +70,7 @@ var unifyTests = []UnifyTest{
 			"W": "Y",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(a,Y).",
 		B: "p(Q,W).",
 		R: "p(a,Y).",
@@ -79,7 +79,7 @@ var unifyTests = []UnifyTest{
 			"W": "Y",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(Q,W).",
 		B: "p(a,Y).",
 		R: "p(a,W).",
@@ -89,7 +89,7 @@ var unifyTests = []UnifyTest{
 		},
 	},
 	// 9
-	UnifyTest{
+	{
 		A: "p(X,Y).",
 		B: "p(Q,Q).",
 		R: "p(Y,Y).",
@@ -98,7 +98,7 @@ var unifyTests = []UnifyTest{
 			"X": "Y",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(a,Y,X).",
 		B: "p(Q,z,Q).",
 		R: "p(a,z,a).",
@@ -108,7 +108,7 @@ var unifyTests = []UnifyTest{
 			"X": "a",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(Q,z,Q).",
 		B: "p(a,Y,X).",
 		R: "p(a,z,a).",
@@ -118,7 +118,7 @@ var unifyTests = []UnifyTest{
 			"X": "a",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(X,a).",
 		B: "p(a,X).",
 		R: "p(a,a).",
@@ -126,7 +126,7 @@ var unifyTests = []UnifyTest{
 			"X": "a",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(X,X).",
 		B: "p(a,a).",
 		R: "p(a,a).",
@@ -134,7 +134,7 @@ var unifyTests = []UnifyTest{
 			"X": "a",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(a,a).",
 		B: "p(X,X).",
 		R: "p(a,a).",
@@ -142,7 +142,7 @@ var unifyTests = []UnifyTest{
 			"X": "a",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(X,Y,Z).",
 		B: "p(a,X,Y).",
 		R: "p(a,a,a).",
@@ -152,7 +152,7 @@ var unifyTests = []UnifyTest{
 			"Z": "a",
 		},
 	},
-	UnifyTest{
+	{
 		A: "p(a,X,Y).",
 		B: "p(X,Y,Z).",
 		R: "p(a,a,a).",

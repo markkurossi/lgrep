@@ -13,26 +13,30 @@ import (
 	"sync"
 )
 
+// Symbol specifies symbol instances.
 type Symbol uint32
 
+// SymbolName implements symbol names.
 type SymbolName struct {
 	Name       string
 	Stringlike bool
 }
 
 var (
-	m                    = &sync.Mutex{}
-	nextSymbolID  Symbol = SymFirstIntern
-	symbolsByID          = make(map[Symbol]SymbolName)
-	symbolsByName        = make(map[string]Symbol)
+	m             = &sync.Mutex{}
+	nextSymbolID  = SymFirstIntern
+	symbolsByID   = make(map[Symbol]SymbolName)
+	symbolsByName = make(map[string]Symbol)
 )
 
+// Symbol types.
 const (
 	SymNil Symbol = iota
 	SymExpr
 	SymFirstIntern
 )
 
+// IsExpr tests if the symbol is an expression.
 func (s Symbol) IsExpr() bool {
 	return s == SymExpr
 }
@@ -58,6 +62,8 @@ func (s Symbol) String() string {
 	return fmt.Sprintf(":%d", s)
 }
 
+// Intern interns the argument string so that all equal strings return
+// the same Symbol instance.
 func Intern(value string, stringlike bool) (Symbol, string) {
 	m.Lock()
 	var name SymbolName

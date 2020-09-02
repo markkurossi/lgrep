@@ -15,12 +15,14 @@ import (
 	"unicode"
 )
 
+// Lexer implements lexical analyzer.
 type Lexer struct {
 	in      *bufio.Reader
 	current *Position
 	last    *Position
 }
 
+// Position implements input positions.
 type Position struct {
 	Name string
 	Row  int
@@ -31,12 +33,14 @@ func (p Position) String() string {
 	return fmt.Sprintf("%s:%d:%d", p.Name, p.Row, p.Col)
 }
 
+// Set sets the position.
 func (p *Position) Set(o *Position) {
 	p.Name = o.Name
 	p.Row = o.Row
 	p.Col = o.Col
 }
 
+// NewLexer creates a new lexical analyzer.
 func NewLexer(inputName string, rd io.Reader) *Lexer {
 	return &Lexer{
 		in: bufio.NewReader(rd),
@@ -48,10 +52,11 @@ func NewLexer(inputName string, rd io.Reader) *Lexer {
 	}
 }
 
-func (l *Lexer) ReadRune() (rune, error) {
+// ReadRune reads the next input rune.
+func (l *Lexer) ReadRune() (rune, int, error) {
 	r, n, err := l.in.ReadRune()
 	if err != nil {
-		return r, err
+		return r, n, err
 	}
 	l.last.Set(l.current)
 	if r == '\n' {
@@ -61,21 +66,28 @@ func (l *Lexer) ReadRune() (rune, error) {
 		l.current.Col += n
 	}
 
-	return r, err
+	return r, n, err
 }
 
-func (l *Lexer) UnreadRune() {
-	l.in.UnreadRune()
+// UnreadRune unreads the latest input rune.
+func (l *Lexer) UnreadRune() error {
+	err := l.in.UnreadRune()
+	if err != nil {
+		return err
+	}
 	l.current.Set(l.last)
+	return nil
 }
 
+// Pos returns the current input position as a string.
 func (l *Lexer) Pos() string {
 	return l.current.String()
 }
 
+// GetToken gets the next token.
 func (l *Lexer) GetToken() (*Token, error) {
 	for {
-		r, err := l.ReadRune()
+		r, _, err := l.ReadRune()
 		if err != nil {
 			return nil, err
 		}
@@ -96,13 +108,15 @@ func (l *Lexer) GetToken() (*Token, error) {
 			}, nil
 
 		case '>':
-			r, err := l.ReadRune()
+			r, _, err := l.ReadRune()
 			t := TokenGT
 			if err == nil {
 				if r == '=' {
 					t = TokenGE
 				} else {
-					l.UnreadRune()
+					if err := l.UnreadRune(); err != nil {
+						return nil, err
+					}
 				}
 			}
 			return &Token{
@@ -111,13 +125,15 @@ func (l *Lexer) GetToken() (*Token, error) {
 			}, nil
 
 		case '<':
-			r, err := l.ReadRune()
+			r, _, err := l.ReadRune()
 			t := TokenLT
 			if err == nil {
 				if r == '=' {
 					t = TokenLE
 				} else {
-					l.UnreadRune()
+					if err := l.UnreadRune(); err != nil {
+						return nil, err
+					}
 				}
 			}
 			return &Token{
@@ -156,7 +172,7 @@ func (l *Lexer) GetToken() (*Token, error) {
 			}, nil
 
 		case ':':
-			r, err := l.ReadRune()
+			r, _, err := l.ReadRune()
 			if err != nil {
 				return nil, err
 			}
@@ -182,7 +198,7 @@ func (l *Lexer) GetToken() (*Token, error) {
 
 func (l *Lexer) skipComment() error {
 	for {
-		r, err := l.ReadRune()
+		r, _, err := l.ReadRune()
 		if err != nil {
 			if err == io.EOF {
 				return nil
@@ -198,7 +214,7 @@ func (l *Lexer) skipComment() error {
 func (l *Lexer) readVariable(r rune) (*Token, error) {
 	value := []rune{r}
 	for {
-		r, err := l.ReadRune()
+		r, _, err := l.ReadRune()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -208,7 +224,9 @@ func (l *Lexer) readVariable(r rune) (*Token, error) {
 		if unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_' {
 			value = append(value, r)
 		} else {
-			l.UnreadRune()
+			if err := l.UnreadRune(); err != nil {
+				return nil, err
+			}
 			break
 		}
 	}
@@ -223,7 +241,7 @@ func (l *Lexer) readVariable(r rune) (*Token, error) {
 func (l *Lexer) readString() (*Token, error) {
 	var value []rune
 	for {
-		r, err := l.ReadRune()
+		r, _, err := l.ReadRune()
 		if err != nil {
 			return nil, err
 		}
@@ -231,7 +249,7 @@ func (l *Lexer) readString() (*Token, error) {
 			break
 		}
 		if r == '\\' {
-			r, err := l.ReadRune()
+			r, _, err = l.ReadRune()
 			if err != nil {
 				return nil, err
 			}
@@ -270,6 +288,8 @@ func (l *Lexer) readString() (*Token, error) {
 	}, nil
 }
 
+// Stringify escapes the argument string so that it is a valid datalog
+// string literal value.
 func Stringify(val string) string {
 	result := []rune{'"'}
 	for _, r := range val {
@@ -301,7 +321,7 @@ func Stringify(val string) string {
 func (l *Lexer) readIdentifier(r rune) (*Token, error) {
 	value := []rune{r}
 	for {
-		r, err := l.ReadRune()
+		r, _, err := l.ReadRune()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -311,7 +331,9 @@ func (l *Lexer) readIdentifier(r rune) (*Token, error) {
 		if isIdentifierRune(r) {
 			value = append(value, r)
 		} else {
-			l.UnreadRune()
+			if err := l.UnreadRune(); err != nil {
+				return nil, err
+			}
 			break
 		}
 	}
@@ -342,8 +364,10 @@ func isIdentifierRune(r rune) bool {
 	return unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsPunct(r)
 }
 
+// TokenType defines token types.
 type TokenType int
 
+// Known token types.
 const (
 	TokenArrow TokenType = iota + 256
 	TokenWildcard
@@ -362,6 +386,7 @@ const (
 	TokenString
 )
 
+// IsExpr tests if the token is an expression.
 func (t TokenType) IsExpr() bool {
 	switch t {
 	case TokenEQ, TokenGE, TokenGT, TokenLE, TokenLT, TokenMul, TokenDiv,
@@ -372,6 +397,7 @@ func (t TokenType) IsExpr() bool {
 	}
 }
 
+// Token implements a datalog program token.
 type Token struct {
 	Type     TokenType
 	Value    string
@@ -396,11 +422,11 @@ var tokenNames = map[TokenType]string{
 func (t *Token) String() string {
 	if t.Type < 256 {
 		return fmt.Sprintf("%c", rune(t.Type))
-	} else {
-		name, ok := tokenNames[t.Type]
-		if ok {
-			return name
-		}
-		return t.Value
 	}
+	name, ok := tokenNames[t.Type]
+	if ok {
+		return name
+	}
+	return t.Value
+
 }

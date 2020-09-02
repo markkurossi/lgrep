@@ -22,19 +22,19 @@ type test struct {
 }
 
 var testFiles = []test{
-	test{
+	{
 		file:   "clique100.pl",
 		result: "same_clique(0, 100).",
 	},
-	test{
+	{
 		file:   "graph100.pl",
 		result: "reachable(11, 99).",
 	},
-	test{
+	{
 		file:   "induction100.pl",
 		result: "q(100).",
 	},
-	test{
+	{
 		file: "ship.pl",
 		result: `
 ship_to(tea, london).
@@ -44,7 +44,7 @@ ship_to(sausage, munich).
 ship_to(horse, seoul).
 `,
 	},
-	test{
+	{
 		file: "small.pl",
 		result: `
 ancestor(brad, john).
@@ -52,7 +52,7 @@ ancestor(brad, ann).
 ancestor(brad, bill).
 `,
 	},
-	test{
+	{
 		file: "bidipath.dl",
 		result: `
 path(a, b).
@@ -73,14 +73,14 @@ path(d, c).
 path(d, d).
 `,
 	},
-	test{
+	{
 		file: "laps.dl",
 		result: `
 permit(rams, store, rams_couch).
 permit(will, fetch, rams_couch).
 `,
 	},
-	test{
+	{
 		file: "path.dl",
 		result: `
 path(a, b).
@@ -101,22 +101,22 @@ path(d, c).
 path(d, d).
 `,
 	},
-	test{
+	{
 		file:   "pq.dl",
 		result: `q(a).`,
 	},
-	test{
+	{
 		file:   "says.dl",
 		result: `says(tpme1, m1).`,
 	},
-	test{
+	{
 		file: "tc.dl",
 		result: `
 r(a, b).
 r(a, c).
 `,
 	},
-	test{
+	{
 		file: "ancestor.dl",
 		result: `
 ancestor(bob, douglas).
@@ -127,30 +127,30 @@ ancestor(ebbon, john).
 ancestor(john, douglas).
 `,
 	},
-	test{
+	{
 		file: "selection.dl",
 		result: `
 ans(alpha, alpha, 1, 7).
 ans(beta, beta, 23, 10).
 `,
 	},
-	test{
+	{
 		file:   "expr.dl",
 		result: `mismatch(42).`,
 	},
-	test{
+	{
 		file:   "expr-add.dl",
 		result: `add(100,50,150).`,
 	},
-	test{
+	{
 		file:   "expr-sub.dl",
 		result: `sub(100,50,50).`,
 	},
-	test{
+	{
 		file:   "expr-mul.dl",
 		result: `mul(100,50,5000).`,
 	},
-	test{
+	{
 		file:   "expr-div.dl",
 		result: `div(100,50,2).`,
 	},

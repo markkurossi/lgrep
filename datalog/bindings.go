@@ -12,6 +12,7 @@ import (
 	"fmt"
 )
 
+// Bindings implement symbol bindings.
 type Bindings struct {
 	arr []binding
 }
@@ -21,10 +22,12 @@ type binding struct {
 	val Term
 }
 
+// NewBindings creates a new bindings instance.
 func NewBindings() *Bindings {
 	return &Bindings{}
 }
 
+// Size returns the number of bindings.
 func (env *Bindings) Size() int {
 	return len(env.arr)
 }
@@ -41,6 +44,7 @@ func (env *Bindings) String() string {
 	return "{" + str + "}"
 }
 
+// Clone creates a new independent copy of the bindings.
 func (env *Bindings) Clone() *Bindings {
 	n := NewBindings()
 	for _, b := range env.arr {
@@ -64,6 +68,7 @@ func (env *Bindings) Map(term Term) Term {
 	return term
 }
 
+// Contains tests if the symbols has a binding.
 func (env *Bindings) Contains(s Symbol) bool {
 	for _, b := range env.arr {
 		if b.sym == s {
@@ -73,6 +78,8 @@ func (env *Bindings) Contains(s Symbol) bool {
 	return false
 }
 
+// Bind binds the symbol for the term. The function returns true if
+// the binding was added and false if the symbol was already bound.
 func (env *Bindings) Bind(s Symbol, term Term) bool {
 	if env.Contains(s) {
 		return false
